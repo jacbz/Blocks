@@ -1,4 +1,3 @@
-import { MusicVAE } from '@magenta/music/es6/music_vae';
 import { Block } from './block';
 import * as Constants from './constants';
 import { DrumKit } from './drumkit';
@@ -6,6 +5,7 @@ import { DrumKit } from './drumkit';
 
 // @ts-ignore
 import * as Tone from 'tone'
+import { MusicVAE } from '@magenta/music/es6/music_vae';
 import interact from 'interactjs'
 
 let drumsVae: MusicVAE;
@@ -13,12 +13,10 @@ let drumsVae: MusicVAE;
 let isPlaying = false;
 let currentStep: number = undefined;
 
-const temperature = 1.1;
-const rnn_steps = 20;
-
 const blocks: Block[] = [];
-init();
+let hoveredCellElement: HTMLElement;
 
+init();
 
 function init() {
     drumsVae = new MusicVAE(
@@ -41,12 +39,14 @@ function init() {
 
 function finishLoading() {
     drumsVae
-        .sample(2, temperature)
+        .sample(Constants.NUMBER_OF_BLOCKS, Constants.TEMPERATURE)
         .then((samples) => {
             console.log(samples);
-            samples.forEach(s => blocks.push(new Block(s)));
+            for (let i = 0; i < Constants.NUMBER_OF_BLOCKS; i++) {
+                blocks.push(new Block(i, samples[i]));
+            }
             drawBlocks();
-            
+
             document.getElementById('loading').remove();
             document.getElementById('container').style.display = null;
         });
@@ -60,6 +60,11 @@ function drawBlocks() {
         block.element = blockElement.querySelector('.block');
         block.initGrid();
         containerElement.appendChild(blockElement);
+
+        const grid = block.element.querySelector('.grid');
+        grid.addEventListener("mouseover", (event) => {
+            hoveredCellElement = event.target as HTMLElement;
+          }, false);
     }
 }
 
@@ -97,6 +102,7 @@ btn.addEventListener('click', () => {
     }
 });
 
+// test panel
 const drumkit = DrumKit.getInstance();
 const container = document.querySelector('#test-panel');
 for (let i = 0; i < Constants.DRUM_PITCHES.length; i++) {
@@ -112,19 +118,17 @@ for (let i = 0; i < Constants.DRUM_PITCHES.length; i++) {
     container.appendChild(button);
 }
 
+// make blocks draggable
 interact('.block').draggable({
     inertia: true,
     ignoreFrom: '.grid',
     modifiers: [
-      interact.modifiers.restrictRect({
-        restriction: 'parent',
-        endOnly: true
-      })
+        interact.modifiers.restrictRect({
+            restriction: 'parent',
+            endOnly: true
+        })
     ],
     listeners: {
-        start(event) {
-            const target = event.target;
-        },
         move(event) {
             const target = event.target;
             // keep the dragged position in the data-x/data-y attributes
@@ -140,3 +144,30 @@ interact('.block').draggable({
         },
     }
 })
+
+// dragging on the grid to toggle cells
+var moved: HTMLElement[] = []; // already toggled in this interaction
+interact('.cell')
+    .draggable({
+        listeners: {
+            start(event) {
+                moved = [];
+            },
+            move: function (event) {
+                if (moved.indexOf(hoveredCellElement) >= 0) {
+                    return;
+                }
+                const blockId = parseInt(hoveredCellElement.getAttribute('block'));
+                const block = blocks.find(b => b.id === blockId);
+                block.toggleNote(hoveredCellElement);
+                moved.push(hoveredCellElement);
+            }
+        }
+    })
+    .styleCursor(false)
+    // clear the canvas on doubletap
+    .on('click', event => {
+        const blockId = parseInt(event.target.getAttribute('block'));
+        const block = blocks.find(b => b.id === blockId);
+        block.toggleNote(event.target);
+    });

@@ -73,12 +73,17 @@ header {
 }
 
 .cell:hover {
-    background: lightgray;
+    background: grey;
 }
 
 .active {
     background: white;
 }
+
+.cell.active:hover {
+    background: lightgrey;
+}
+
 
 .current {
     background: lightgreen;

@@ -3,10 +3,12 @@ import * as Constants from './constants';
 import { DrumKit } from "./drumkit";
 
 export class Block {
+    id: number;
     noteSequence: INoteSequence;
     element: HTMLElement;
 
-    constructor(noteSequence: INoteSequence) {
+    constructor(id: number, noteSequence: INoteSequence) {
+        this.id = id;
         this.noteSequence = noteSequence;
     }
 
@@ -15,22 +17,18 @@ export class Block {
         for (let row = 0; row < Constants.DRUM_PITCHES.length; row++) {
             const rowElement = document.createElement('div');
             rowElement.classList.add('row');
+            rowElement.setAttribute('block', this.id.toString());
+            rowElement.setAttribute('row', row.toString());
             gridElement.appendChild(rowElement);
+
             for (let col = 0; col < Constants.TOTAL_STEPS; col++) {
                 const cellElement = document.createElement('div');
                 cellElement.classList.add('cell');
+                
+                cellElement.setAttribute('block', this.id.toString());
+                cellElement.setAttribute('row', row.toString());
+                cellElement.setAttribute('col', col.toString());
                 rowElement.appendChild(cellElement);
-
-                cellElement.addEventListener('click', () => {
-                    const pitch = this.rowIndexToPitch(row);
-                    const step = col;
-                    if (cellElement.classList.contains('active')) {
-                        this.removeNote(pitch, step);
-                    } else {
-                        this.addNote(pitch, step);
-                    }
-                    this.updateGrid();
-                });
             }
         }
         this.updateGrid();
@@ -70,6 +68,20 @@ export class Block {
             const velocity = note.hasOwnProperty('velocity') ? note.velocity / Constants.MAX_MIDI_VELOCITY : undefined;    
             drumkit.playNote(note.pitch, time, velocity);
         }
+    }
+
+    toggleNote(cellElement: HTMLElement) {
+        const pitch = this.rowIndexToPitch(parseInt(cellElement.getAttribute('row')));
+        const step = parseInt(cellElement.getAttribute('col'));
+
+        console.log(`${this.id},${pitch}, ${step}`)
+
+        if (cellElement.classList.contains('active')) {
+            this.removeNote(pitch, step);
+        } else {
+            this.addNote(pitch, step);
+        }
+        this.updateGrid();
     }
 
     addNote(pitch: number, step: number) {
