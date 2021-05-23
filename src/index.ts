@@ -6,6 +6,7 @@ import { DrumKit } from './drumkit';
 
 // @ts-ignore
 import * as Tone from 'tone'
+import interact from 'interactjs'
 
 let drumsVae: MusicVAE;
 
@@ -51,11 +52,11 @@ function finishLoading() {
 
 function drawBlocks() {
     const containerElement = document.getElementById('container');
-    for(const block of blocks) {
+    for (const block of blocks) {
         const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
         const blockElement = blockTemplate.content.cloneNode(true) as HTMLElement;
         block.element = blockElement.querySelector('.block');
-        block.initGrid();      
+        block.initGrid();
         containerElement.appendChild(blockElement);
     }
 }
@@ -96,7 +97,7 @@ btn.addEventListener('click', () => {
 
 const drumkit = DrumKit.getInstance();
 const container = document.querySelector('#test-panel');
-for(let i=0; i<Constants.DRUM_PITCHES.length;i++) {
+for (let i = 0; i < Constants.DRUM_PITCHES.length; i++) {
     const button = document.createElement('button');
     button.innerText = Constants.DRUM_NAMES[i];
     button.addEventListener('click', () => {
@@ -108,3 +109,32 @@ for(let i=0; i<Constants.DRUM_PITCHES.length;i++) {
     });
     container.appendChild(button);
 }
+
+interact('.block').draggable({
+    inertia: true,
+    ignoreFrom: '.grid',
+    modifiers: [
+      interact.modifiers.restrictRect({
+        restriction: 'parent',
+        endOnly: true
+      })
+    ],
+    listeners: {
+        start(event) {
+            console.log(event.type, event.target)
+        },
+        move(event) {
+            const target = event.target;
+            // keep the dragged position in the data-x/data-y attributes
+            var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+            var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+
+            // translate the element
+            target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+
+            // update the posiion attributes
+            target.setAttribute('data-x', x)
+            target.setAttribute('data-y', y)
+        },
+    }
+})
