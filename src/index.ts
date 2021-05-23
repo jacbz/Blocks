@@ -40,13 +40,15 @@ function init() {
 }
 
 function finishLoading() {
-    document.getElementById('loading').remove();
     drumsVae
         .sample(2, temperature)
         .then((samples) => {
             console.log(samples);
             samples.forEach(s => blocks.push(new Block(s)));
             drawBlocks();
+            
+            document.getElementById('loading').remove();
+            document.getElementById('container').style.display = null;
         });
 }
 
@@ -121,7 +123,7 @@ interact('.block').draggable({
     ],
     listeners: {
         start(event) {
-            console.log(event.type, event.target)
+            const target = event.target;
         },
         move(event) {
             const target = event.target;

@@ -51,7 +51,6 @@ export class Block {
 
     // updates with step highlighted
     updateStep(step: number) {
-        console.log(`drawing step ${step}`)
         this.updateGrid();
         if (step === undefined) {
             return;
