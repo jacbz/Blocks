@@ -16,6 +16,7 @@
     font-size: 400%;
     top: 0;
     left: 0;
+    z-index: 999999;
 }
 
 body {
@@ -83,6 +84,14 @@ header {
     background: white;
 }
 
+.current {
+    background: lightgreen;
+}
+
+.active.current {
+    background: green;    
+}
+
 button {    
     display: block;
     font-size: inherit;
@@ -100,4 +109,13 @@ footer {
     font-size: 85%;
     margin-bottom: 32px;
     color: lightgray;
+}
+
+#test-panel {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 150px;
+    position: absolute;
+    right: 100px;
+    zoom: 0.75;
 }

@@ -1,5 +1,6 @@
 import { INoteSequence, NoteSequence } from "@magenta/music/es6/protobuf/index";
 import * as Constants from './constants';
+import { DrumKit } from "./drumkit";
 
 export class Block {
     noteSequence: INoteSequence;
@@ -45,6 +46,30 @@ export class Block {
                 const rowIndex = this.pitchToRowIndex(note.pitch);
                 gridElement.children[rowIndex].children[step].classList.add('active');
             }
+        }
+    }
+
+    // updates with step highlighted
+    updateStep(step: number) {
+        console.log(`drawing step ${step}`)
+        this.updateGrid();
+        if (step === undefined) {
+            return;
+        }
+
+        const gridElement = this.element.querySelector('.grid');
+        for (let row = 0; row < Constants.DRUM_PITCHES.length; row++) {
+            // console.log(`row ${row}, step ${step}`);
+            (gridElement.querySelectorAll('.row')[row].querySelectorAll('.cell')[step] as HTMLElement).classList.add('current');
+        }
+    }
+
+    playStep(step: number, time: number) {
+        const drumkit = DrumKit.getInstance();
+
+        for(const note of this.noteSequence.notes.filter(n => n.quantizedStartStep === step)) {
+            const velocity = note.hasOwnProperty('velocity') ? note.velocity / Constants.MAX_MIDI_VELOCITY : undefined;    
+            drumkit.playNote(note.pitch, time, velocity);
         }
     }
 
