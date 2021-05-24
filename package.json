@@ -10,8 +10,10 @@
     "serve": "webpack serve --open --config webpack.dev.js"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "@magenta/music": "^1.21.0",
     "css-loader": "^5.2.4",
+    "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
     "interactjs": "^1.10.11",
     "mini-css-extract-plugin": "^1.6.0",

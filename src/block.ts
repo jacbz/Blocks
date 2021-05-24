@@ -32,6 +32,8 @@ class Block {
     this._currentStep = currentStep;
   }
 
+  private _muted: boolean;
+
   constructor(id: number, noteSequence: INoteSequence) {
     this._id = id;
     this._notes = noteSequence.notes;
@@ -73,6 +75,9 @@ class Block {
       }
     }
 
+    if (this._muted) {
+      return;
+    }
     if (this.currentStep === undefined) {
       return;
     }
@@ -87,6 +92,9 @@ class Block {
   }
 
   playStep(step: number, time: number) {
+    if (this._muted) {
+      return;
+    }
     const drumkit = DrumKit.getInstance();
 
     for (const note of this._notes.filter((n) => n.quantizedStartStep === step)) {
@@ -138,6 +146,11 @@ class Block {
   // invert, since lower pitch means higher index, e.g. 36 -> 6
   static pitchToRowIndex(pitch: number) {
     return Constants.DRUM_PITCHES.length - Constants.DRUM_PITCHES.indexOf(pitch) - 1;
+  }
+
+  toggleMute() {
+    this._muted = !this._muted;
+    this.element.querySelector('.grid').classList.toggle('muted');
   }
 }
 

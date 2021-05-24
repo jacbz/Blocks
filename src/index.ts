@@ -28,13 +28,14 @@ function drawBlocks() {
     block.element = blockElement.querySelector('.block');
     block.initGrid();
     containerElement.appendChild(blockElement);
-
     const grid = block.element.querySelector('.grid');
-    grid.addEventListener(
-      'mouseover',
-      mouseOver,
-      false
-    );
+    grid.addEventListener('mouseover', mouseOver, false);
+
+    const muteButton = block.element.querySelector('#mute-button');
+    muteButton.addEventListener('click', () => {
+      muteButton.classList.toggle('muted');
+      block.toggleMute();
+    });
   }
 }
 
