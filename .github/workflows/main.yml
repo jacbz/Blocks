@@ -15,18 +15,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build
+      - name: Setup node
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: npm install
-      - run: npm run build
 
-      - name: Install SSH Key
+      - name: Install npm dependencies
+        run: npm install --production
+
+      - name: Build with webpack
+        run: npm run build
+
+      - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           
-      - name: Deploy with rsync
+      - name: Deploy to web server
         run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PATH }}
