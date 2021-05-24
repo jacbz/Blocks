@@ -63,6 +63,12 @@ header {
   padding: 6px;
   margin: 16px;
   border-radius: 4px;
+
+  .block-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 $cell-spacing: 1.6px;
@@ -156,6 +162,23 @@ $muted-color: red;
       content: fa-content($fa-var-volume-mute);
       color: $muted-color;
     }
+  }
+}
+
+#magic-button {
+  @extend %fa-icon;
+  @extend .fas;
+  &:before {
+    content: fa-content($fa-var-magic);
+  }
+}
+
+#delete-button {
+  @extend %fa-icon;
+  @extend .fas;
+  margin-top: auto;
+  &:before {
+    content: fa-content($fa-var-times);
   }
 }
 

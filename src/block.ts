@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
-import { INoteSequence, NoteSequence } from '@magenta/music';
+import { INoteSequence, NoteSequence, MusicVAE, MusicRNN } from '@magenta/music/es6';
 import * as Constants from './constants';
 import DrumKit from './drumkit';
 
@@ -10,7 +9,7 @@ class Block {
     return this._id;
   }
 
-  private _notes: NoteSequence.INote[];
+  private _noteSequence: INoteSequence;
 
   private _element: HTMLElement;
 
@@ -34,9 +33,20 @@ class Block {
 
   private _muted: boolean;
 
-  constructor(id: number, noteSequence: INoteSequence) {
+  constructor(id: number, noteSequence?: INoteSequence) {
     this._id = id;
-    this._notes = noteSequence.notes;
+    const noteSeq = noteSequence || Block.defaultNoteSequence();
+    this._noteSequence = noteSeq;
+    console.log(this._noteSequence);
+  }
+
+  static defaultNoteSequence(): INoteSequence {
+    return new NoteSequence({
+      quantizationInfo: {
+        stepsPerQuarter: Constants.STEPS_PER_QUARTER
+      },
+      totalQuantizedSteps: Constants.TOTAL_STEPS
+    });
   }
 
   initGrid() {
@@ -68,7 +78,7 @@ class Block {
     });
 
     const gridElement = this._element.querySelector('.grid');
-    for (const note of this._notes) {
+    for (const note of this._noteSequence.notes) {
       for (let step = note.quantizedStartStep; step < note.quantizedEndStep; step += 1) {
         const rowIndex = Block.pitchToRowIndex(note.pitch);
         gridElement.children[rowIndex].children[step].classList.add('active');
@@ -97,7 +107,7 @@ class Block {
     }
     const drumkit = DrumKit.getInstance();
 
-    for (const note of this._notes.filter((n) => n.quantizedStartStep === step)) {
+    for (const note of this._noteSequence.notes.filter((n) => n.quantizedStartStep === step)) {
       const velocity = Object.prototype.hasOwnProperty.call(note, 'velocity')
         ? note.velocity / Constants.MAX_MIDI_VELOCITY
         : undefined;
@@ -119,11 +129,11 @@ class Block {
 
   addNote(pitch: number, step: number) {
     if (
-      !this._notes.find(
+      !this._noteSequence.notes.find(
         (n) => n.pitch === pitch && n.quantizedStartStep === step && n.quantizedEndStep === step + 1
       )
     ) {
-      this._notes.push({
+      this._noteSequence.notes.push({
         pitch,
         quantizedStartStep: step,
         quantizedEndStep: step + 1,
@@ -133,7 +143,7 @@ class Block {
   }
 
   removeNote(pitch: number, step: number) {
-    this._notes = this._notes.filter(
+    this._noteSequence.notes = this._noteSequence.notes.filter(
       (n) => n.pitch !== pitch || n.quantizedStartStep !== step || n.quantizedEndStep !== step + 1
     );
   }
@@ -151,6 +161,24 @@ class Block {
   toggleMute() {
     this._muted = !this._muted;
     this.element.querySelector('.grid').classList.toggle('muted');
+  }
+
+  doMagic(drumsVae: MusicVAE, drumsRnn: MusicRNN) {
+    // if notes are empty, create a new block
+    if (this._noteSequence.notes.length === 0) {
+      drumsVae.sample(Constants.NUMBER_OF_BLOCKS, Constants.TEMPERATURE).then((samples) => {
+        [this._noteSequence] = samples;
+        this.updateGrid();
+      });
+      return;
+    }
+    // otherwise: continue current
+    drumsRnn
+      .continueSequence(this._noteSequence, Constants.RNN_STEPS, Constants.TEMPERATURE)
+      .then((continuedSequence) => {
+        this._noteSequence = continuedSequence;
+        this.updateGrid();
+      });
   }
 }
 

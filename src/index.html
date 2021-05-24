@@ -14,6 +14,7 @@
     <div class="container" id="container" style="display: none">
       <div id="actions">
         <button id="play-button" class="square">Play</button>
+        <button id="new-button" class="square">New Block</button>
         <input type="range" min="40" max="200" class="slider" id="volume">
         <span><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span>
       </div>
@@ -22,7 +23,11 @@
       <template id="block-template">
         <div class="block">
           <div class="grid"></div>
-          <button class="circle" id="mute-button"></button>
+          <div class="block-actions">
+            <button class="circle" id="mute-button" title="Mute this block"></button>
+            <button class="circle" id="magic-button" title="Do magic"></button>
+            <button class="circle" id="delete-button" title="Remove this block"></button>
+          </div>
         </div>
       </template>
     </div>

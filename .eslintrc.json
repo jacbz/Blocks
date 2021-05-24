@@ -15,7 +15,13 @@
     "comma-dangle": ["error", "never"],
     "import/extensions": "off",
     "no-underscore-dangle": "off",
-    "no-param-reassign": 0
+    "no-param-reassign": 0,
+    "object-curly-newline": [
+      "error",
+      {
+        "ImportDeclaration": "never"
+      }
+    ]
   },
   "settings": {
     "import/resolver": {

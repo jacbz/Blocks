@@ -1,6 +1,6 @@
 // @ts-ignore
 import * as Tone from 'tone';
-import { MusicVAE } from '@magenta/music/es6/music_vae';
+import { MusicVAE, MusicRNN } from '@magenta/music/es6';
 import interact from 'interactjs';
 
 import Block from './block';
@@ -8,6 +8,7 @@ import * as Constants from './constants';
 import DrumKit from './drumkit';
 
 let drumsVae: MusicVAE;
+let drumsRnn: MusicRNN;
 
 let isPlaying = false;
 let currentStep: number;
@@ -20,35 +21,44 @@ const volumeSlider = document.getElementById('volume') as HTMLInputElement;
 volumeSlider.valueAsNumber = Constants.BPM;
 const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
 
-function drawBlocks() {
+function initBlock(block: Block) {
   const mouseOver = (event: Event) => {
     hoveredCellElement = event.target as HTMLElement;
   };
 
-  for (const block of blocks) {
-    const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
-    const blockElement = blockTemplate.content.cloneNode(true) as HTMLElement;
-    block.element = blockElement.querySelector('.block');
-    block.initGrid();
-    containerElement.appendChild(blockElement);
-    const grid = block.element.querySelector('.grid');
-    grid.addEventListener('mouseover', mouseOver, false);
+  const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
+  const blockElement = blockTemplate.content.cloneNode(true) as HTMLElement;
+  block.element = blockElement.querySelector('.block');
+  block.initGrid();
+  containerElement.appendChild(blockElement);
+  const grid = block.element.querySelector('.grid');
+  grid.addEventListener('mouseover', mouseOver, false);
 
-    const muteButton = block.element.querySelector('#mute-button');
-    muteButton.addEventListener('click', () => {
-      muteButton.classList.toggle('muted');
-      block.toggleMute();
-    });
-  }
+  const muteButton = block.element.querySelector('#mute-button');
+  muteButton.addEventListener('click', () => {
+    muteButton.classList.toggle('muted');
+    block.toggleMute();
+  });
+
+  const magicButton = block.element.querySelector('#magic-button');
+  magicButton.addEventListener('click', () => {
+    block.doMagic(drumsVae, drumsRnn);
+  });
+
+  const deleteButton = block.element.querySelector('#delete-button');
+  deleteButton.addEventListener('click', () => {
+    blocks.splice(blocks.indexOf(block), 1);
+    block.element.parentElement.removeChild(block.element);
+  });
 }
 
 function finishLoading() {
   drumsVae.sample(Constants.NUMBER_OF_BLOCKS, Constants.TEMPERATURE).then((samples) => {
-    console.log(samples);
     for (let i = 0; i < Constants.NUMBER_OF_BLOCKS; i += 1) {
-      blocks.push(new Block(i, samples[i]));
+      const block = new Block(i, samples[i]);
+      blocks.push(block);
+      initBlock(block);
     }
-    drawBlocks();
 
     document.getElementById('loading').remove();
     document.getElementById('container').style.display = null;
@@ -59,7 +69,14 @@ function init() {
   drumsVae = new MusicVAE(
     'https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/drums_2bar_hikl_small'
   );
-  drumsVae.initialize().then(() => {
+  drumsRnn = new MusicRNN(
+    'https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn'
+  );
+
+  Promise.all([
+    drumsVae.initialize(),
+    drumsRnn.initialize()
+  ]).then(() => {
     finishLoading();
   });
 }
@@ -124,6 +141,13 @@ for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
 volumeSlider.addEventListener('input', () => {
   Tone.Transport.bpm.value = volumeSlider.valueAsNumber;
   volumeLabel.innerText = volumeSlider.value;
+});
+
+// new block
+document.getElementById('new-button').addEventListener('click', () => {
+  const block = new Block(blocks.length > 0 ? blocks[blocks.length - 1].id + 1 : 0);
+  blocks.push(block);
+  initBlock(block);
 });
 
 // make blocks draggable
