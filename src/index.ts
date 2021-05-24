@@ -48,13 +48,14 @@ function initBlock(block: Block) {
   const deleteButton = block.element.querySelector('#delete-button');
   deleteButton.addEventListener('click', () => {
     blocks.splice(blocks.indexOf(block), 1);
-    block.element.parentElement.removeChild(block.element);
+    // hide instead of delete: otherwise blocks would be moved by the resulting layout change
+    block.element.style.visibility = 'hidden';
   });
 }
 
 function finishLoading() {
-  drumsVae.sample(Constants.NUMBER_OF_BLOCKS, Constants.TEMPERATURE).then((samples) => {
-    for (let i = 0; i < Constants.NUMBER_OF_BLOCKS; i += 1) {
+  drumsVae.sample(Constants.NUMBER_OF_BLOCKS_AT_START, Constants.TEMPERATURE).then((samples) => {
+    for (let i = 0; i < Constants.NUMBER_OF_BLOCKS_AT_START; i += 1) {
       const block = new Block(i, samples[i]);
       blocks.push(block);
       initBlock(block);
@@ -179,7 +180,7 @@ interact('.block').draggable({
 
 // dragging on the grid to toggle cells
 let moved: HTMLElement[] = []; // already toggled in this interaction
-interact('.cell')
+interact('.grid')
   .draggable({
     listeners: {
       start() {

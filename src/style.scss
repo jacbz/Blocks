@@ -39,6 +39,7 @@ header {
   background: rgba(0, 0, 0, 0.25);
   padding: 1em;
   width: calc(95vw - 40px);
+  overflow: hidden;
 }
 
 #loading {

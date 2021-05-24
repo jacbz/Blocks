@@ -166,10 +166,12 @@ class Block {
   doMagic(drumsVae: MusicVAE, drumsRnn: MusicRNN) {
     // if notes are empty, create a new block
     if (this._noteSequence.notes.length === 0) {
-      drumsVae.sample(Constants.NUMBER_OF_BLOCKS, Constants.TEMPERATURE).then((samples) => {
-        [this._noteSequence] = samples;
-        this.updateGrid();
-      });
+      drumsVae
+        .sample(Constants.NUMBER_OF_BLOCKS_AT_START, Constants.TEMPERATURE)
+        .then((samples) => {
+          [this._noteSequence] = samples;
+          this.updateGrid();
+        });
       return;
     }
     // otherwise: continue current
