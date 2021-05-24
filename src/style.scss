@@ -51,6 +51,11 @@ header {
   }
 }
 
+#actions {
+  display: flex;
+  gap: 12px;
+}
+
 .block {
   display: inline-flex;
   background-color: rgba(0, 0, 0, .35);

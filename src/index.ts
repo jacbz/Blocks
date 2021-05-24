@@ -13,11 +13,14 @@ let isPlaying = false;
 let currentStep: number;
 
 const blocks: Block[] = [];
+
 let hoveredCellElement: HTMLElement;
+const containerElement = document.getElementById('container') as HTMLDivElement;
+const volumeSlider = document.getElementById('volume') as HTMLInputElement;
+volumeSlider.valueAsNumber = Constants.BPM;
+const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
 
 function drawBlocks() {
-  const containerElement = document.getElementById('container');
-
   const mouseOver = (event: Event) => {
     hoveredCellElement = event.target as HTMLElement;
   };
@@ -59,19 +62,9 @@ function init() {
   drumsVae.initialize().then(() => {
     finishLoading();
   });
-
-  // drumsRnn = new rnn.MusicRNN(
-  //   'https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn'
-  // );
-  // Promise.all([
-  //   drumsRnn.initialize()
-  // ]).then(([vars]) => {
-  //   document.getElementById('loading2').textContent += " Done.";
-  // });
 }
 
 function play() {
-  Tone.Transport.bpm.value = Constants.BPM;
   const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
 
   currentStep = 0;
@@ -126,6 +119,12 @@ for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
   });
   container.appendChild(button);
 }
+
+// volume slider
+volumeSlider.addEventListener('input', () => {
+  Tone.Transport.bpm.value = volumeSlider.valueAsNumber;
+  volumeLabel.innerText = volumeSlider.value;
+});
 
 // make blocks draggable
 interact('.block').draggable({

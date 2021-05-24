@@ -12,7 +12,11 @@
     </div>
 
     <div class="container" id="container" style="display: none">
-      <button id="play-button" class="square">Play</button>
+      <div id="actions">
+        <button id="play-button" class="square">Play</button>
+        <input type="range" min="40" max="200" class="slider" id="volume">
+        <span><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span>
+      </div>
       <div id="test-panel"></div>
 
       <template id="block-template">
