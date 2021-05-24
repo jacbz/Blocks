@@ -5,10 +5,10 @@ $fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
 @import '@fortawesome/fontawesome-free/scss/solid';
 @import '@fortawesome/fontawesome-free/scss/regular';
 @import '@fortawesome/fontawesome-free/scss/brands';
-@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Montserrat+Alternates&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Montserrat&display=swap');
 
 $title-font: 'Monoton', sans-serif;
-$body-font: 'Montserrat Alternates', 'Segoe UI', sans-serif;
+$body-font: 'Montserrat', 'Segoe UI', sans-serif;
 $fa-font-path: '~@fortawesome/fontawesome-free/webfonts/';
 
 * {
@@ -34,7 +34,7 @@ header {
 }
 
 .container {
-  margin: 30px;
+  margin: 16px 30px 16px 30px;
   flex: 1;
   background: rgba(0, 0, 0, 0.25);
   padding: 1em;
@@ -195,5 +195,10 @@ $muted-color: red;
 footer {
   font-size: 85%;
   margin-bottom: 32px;
-  color: lightgray;
+  text-align: center;
+  line-height: 130%;
+
+  span {
+    color: lightgray;
+  }
 }

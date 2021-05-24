@@ -153,12 +153,12 @@ document.getElementById('new-button').addEventListener('click', () => {
 
 // make blocks draggable
 interact('.block').draggable({
-  inertia: true,
+  // inertia: true,
   ignoreFrom: '.grid',
   modifiers: [
     interact.modifiers.restrictRect({
       restriction: 'parent',
-      endOnly: true
+      endOnly: false
     })
   ],
   listeners: {

@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>IDP</title>
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    <header>BLOCKS</header>
 
-    <div class="container" id="loading">
-      <span id="loading-text">Loading...</span>
+<head>
+  <title>IDP</title>
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <header>BLOCKS</header>
+
+  <div class="container" id="loading">
+    <span id="loading-text">Loading...</span>
+  </div>
+
+  <div class="container" id="container" style="display: none">
+    <div id="actions">
+      <button id="play-button" class="square">Play</button>
+      <button id="new-button" class="square">New Block</button>
+      <input type="range" min="40" max="200" class="slider" id="volume">
+      <span><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span>
     </div>
+    <div id="test-panel"></div>
 
-    <div class="container" id="container" style="display: none">
-      <div id="actions">
-        <button id="play-button" class="square">Play</button>
-        <button id="new-button" class="square">New Block</button>
-        <input type="range" min="40" max="200" class="slider" id="volume">
-        <span><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span>
-      </div>
-      <div id="test-panel"></div>
-
-      <template id="block-template">
-        <div class="block">
-          <div class="grid"></div>
-          <div class="block-actions">
-            <button class="circle" id="mute-button" title="Mute this block"></button>
-            <button class="circle" id="magic-button" title="Do magic"></button>
-            <button class="circle" id="delete-button" title="Remove this block"></button>
-          </div>
+    <template id="block-template">
+      <div class="block">
+        <div class="grid"></div>
+        <div class="block-actions">
+          <button class="circle" id="mute-button" title="Mute this block"></button>
+          <button class="circle" id="magic-button" title="Do magic"></button>
+          <button class="circle" id="delete-button" title="Remove this block"></button>
         </div>
-      </template>
-    </div>
+      </div>
+    </template>
+  </div>
 
-    <footer>Work In Progress. <span><i class="fab fa-github" style="margin-right: 2px;"></i><a href="https://github.com/jacbz/Blocks"></i>GitHub</a></span></footer>
-  </body>
+  <footer>
+    <span>Made by <a href="http://jacobzhang.de/" target="_blank">Jacob Zhang</a>
+      <span style="margin-left: 0.1em; margin-right: 0.1em; color:silver">|</span>
+      <i class="fab fa-github"></i>
+      <a href="https://github.com/jacbz/Blocks" target="_blank">GitHub</a></span><br>
+    <span style="font-size: 80%;">Powered by <a href="https://magenta.tensorflow.org/" target="_blank">Magenta.js</a> and
+      <a href="https://tonejs.github.io/" target="_blank">Tone.js</a>.</span>
+  </footer>
+</body>
+
 </html>
