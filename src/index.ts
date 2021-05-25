@@ -135,10 +135,7 @@ for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
   const button = document.createElement('button');
   button.innerText = Constants.DRUM_NAMES[i];
   button.addEventListener('click', () => {
-    Tone.Transport.start();
-    Tone.Transport.schedule((time: number) => {
-      drumkit.playNote(Constants.DRUM_PITCHES[i], time, 1);
-    }, '+0');
+    drumkit.playNote(Constants.DRUM_PITCHES[i], '+0', 1);
   });
   container.appendChild(button);
 }
