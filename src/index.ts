@@ -1,15 +1,13 @@
 import * as Tone from 'tone';
-import { MusicVAE } from '@magenta/music/es6/music_vae';
-import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import interact from 'interactjs';
 
 import Block from './block';
 import * as Constants from './constants';
 import DrumKit from './drumkit';
+import WorkerData from './worker';
 
-let drumsVae: MusicVAE;
-let drumsRnn: MusicRNN;
 const drumkit = DrumKit.getInstance();
+const worker = new Worker(new URL('./worker.ts', import.meta.url));
 
 let isPlaying = false;
 let currentStep: number;
@@ -43,7 +41,7 @@ function initBlock(block: Block) {
 
   const magicButton = block.element.querySelector('#magic-button');
   magicButton.addEventListener('click', () => {
-    block.doMagic(drumsVae, drumsRnn);
+    block.doMagic(worker);
   });
 
   const deleteButton = block.element.querySelector('#delete-button');
@@ -55,29 +53,30 @@ function initBlock(block: Block) {
 }
 
 function finishLoading() {
-  drumsVae.sample(Constants.NUMBER_OF_BLOCKS_AT_START, Constants.TEMPERATURE).then((samples) => {
+  worker.postMessage(new WorkerData({
+    numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
+  }));
+
+  worker.onmessage = ({ data }: { data: WorkerData }) => {
     for (let i = 0; i < Constants.NUMBER_OF_BLOCKS_AT_START; i += 1) {
-      const block = new Block(i, samples[i]);
+      const block = new Block(i, data.samples[i]);
       blocks.push(block);
       initBlock(block);
     }
-
     document.getElementById('loading').remove();
     document.getElementById('container').style.display = null;
-  });
+  };
 }
 
 function init() {
-  drumsVae = new MusicVAE(
-    'https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/drums_2bar_hikl_small'
-  );
-  drumsRnn = new MusicRNN(
-    'https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn'
-  );
-
-  Promise.all([drumsVae.initialize(), drumsRnn.initialize()]).then(() => {
-    finishLoading();
-  });
+  worker.postMessage(new WorkerData({
+    startLoading: true
+  }));
+  worker.onmessage = ({ data }: { data: WorkerData }) => {
+    if (data.finishedLoading) {
+      finishLoading();
+    }
+  };
 }
 
 function play() {

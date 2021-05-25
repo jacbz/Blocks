@@ -1,7 +1,6 @@
 import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
-import { MusicVAE } from '@magenta/music/es6/music_vae';
-import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import * as Constants from './constants';
+import WorkerData from './worker';
 
 class Block {
   private _id: number;
@@ -160,24 +159,33 @@ class Block {
     this.element.querySelector('.grid').classList.toggle('muted');
   }
 
-  doMagic(drumsVae: MusicVAE, drumsRnn: MusicRNN) {
+  doMagic(worker: Worker) {
     // if notes are empty, create a new block
     if (this._noteSequence.notes.length === 0) {
-      drumsVae
-        .sample(Constants.NUMBER_OF_BLOCKS_AT_START, Constants.TEMPERATURE)
-        .then((samples) => {
-          [this._noteSequence] = samples;
-          this.updateGrid();
-        });
+      worker.postMessage(
+        new WorkerData({
+          numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
+        })
+      );
+
+      worker.onmessage = ({ data }: { data: WorkerData }) => {
+        [this._noteSequence] = data.samples;
+        this.updateGrid();
+      };
       return;
     }
     // otherwise: continue current
-    drumsRnn
-      .continueSequence(this._noteSequence, Constants.TOTAL_STEPS, Constants.TEMPERATURE)
-      .then((continuedSequence) => {
-        this._noteSequence = continuedSequence;
-        this.updateGrid();
-      });
+
+    worker.postMessage(
+      new WorkerData({
+        sequenceToContinue: this._noteSequence
+      })
+    );
+
+    worker.onmessage = ({ data }: { data: WorkerData }) => {
+      this._noteSequence = data.continuedSequence;
+      this.updateGrid();
+    };
   }
 }
 
