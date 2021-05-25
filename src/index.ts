@@ -9,6 +9,7 @@ import DrumKit from './drumkit';
 
 let drumsVae: MusicVAE;
 let drumsRnn: MusicRNN;
+const drumkit = DrumKit.getInstance();
 
 let isPlaying = false;
 let currentStep: number;
@@ -18,7 +19,7 @@ const blocks: Block[] = [];
 let hoveredCellElement: HTMLElement;
 const containerElement = document.getElementById('container') as HTMLDivElement;
 const volumeSlider = document.getElementById('volume') as HTMLInputElement;
-volumeSlider.valueAsNumber = Constants.BPM;
+volumeSlider.valueAsNumber = Constants.START_BPM;
 const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
 
 function initBlock(block: Block) {
@@ -87,13 +88,13 @@ function play() {
     const pitchToCountMap = new Map<number, number>();
     blocks.forEach((b) => {
       b.currentStep = currentStep;
-      b.getPitchesToPlay().forEach((p) =>
-        pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1)
-      );
+      b.getPitchesToPlay().forEach((p) => {
+        pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1);
+      });
       b.updateGrid();
     });
 
-    for (let [pitch, count] of pitchToCountMap) {
+    for (const [pitch, count] of pitchToCountMap) {
       drumkit.playNote(pitch, time, count);
     }
 
@@ -129,7 +130,6 @@ btn.addEventListener('click', () => {
 });
 
 // test panel
-const drumkit = DrumKit.getInstance();
 const container = document.querySelector('#test-panel');
 for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
   const button = document.createElement('button');

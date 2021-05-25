@@ -2,7 +2,6 @@ import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
 import { MusicVAE } from '@magenta/music/es6/music_vae';
 import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import * as Constants from './constants';
-import DrumKit from './drumkit';
 
 class Block {
   private _id: number;
@@ -39,7 +38,6 @@ class Block {
     this._id = id;
     const noteSeq = noteSequence || Block.defaultNoteSequence();
     this._noteSequence = noteSeq;
-    console.log(this._noteSequence);
   }
 
   static defaultNoteSequence(): INoteSequence {
