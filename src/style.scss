@@ -85,6 +85,26 @@ $cell-spacing: 1.6px;
   &.muted {
     opacity: 0.5;
   }
+
+  &.working {
+    opacity: 0.5;
+
+    #spinner {
+      visibility: visible;
+    }
+  }
+
+  #spinner {
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 60px;
+    height: 60px;
+  }
 }
 
 .row {

@@ -33,6 +33,8 @@ class Block {
 
   private _muted: boolean;
 
+  private _isWorking: boolean;
+
   constructor(id: number, noteSequence?: INoteSequence) {
     this._id = id;
     const noteSeq = noteSequence || Block.defaultNoteSequence();
@@ -71,32 +73,34 @@ class Block {
   }
 
   updateGrid() {
+    const gridElement = this._element.querySelector('.grid');
+
     // reset class names
-    this._element.querySelectorAll('.cell').forEach((cell) => {
+    gridElement.querySelectorAll('.cell').forEach((cell) => {
       cell.className = 'cell';
     });
 
-    const gridElement = this._element.querySelector('.grid');
+    // set working
+    if (this._isWorking) {
+      gridElement.classList.add('working');
+    } else {
+      gridElement.classList.remove('working');
+    }
+
+    // highlight active notes
     for (const note of this._noteSequence.notes) {
       for (let step = note.quantizedStartStep; step < note.quantizedEndStep; step += 1) {
         const rowIndex = Block.pitchToRowIndex(note.pitch);
-        gridElement.children[rowIndex].children[step].classList.add('active');
+        gridElement.querySelector(`div[row="${rowIndex}"][col="${step}"]`).classList.add('active');
       }
     }
 
-    if (this._muted) {
+    if (this._muted || this.currentStep === undefined) {
       return;
     }
-    if (this.currentStep === undefined) {
-      return;
-    }
-    for (let row = 0; row < Constants.DRUM_PITCHES.length; row += 1) {
-      // console.log(`row ${row}, step ${step}`);
-      (
-        gridElement.querySelectorAll('.row')[row].querySelectorAll('.cell')[
-          this.currentStep
-        ] as HTMLElement
-      ).classList.add('current');
+    // highlight entire column of the current step
+    for (const cell of gridElement.querySelectorAll(`div[col="${this.currentStep}"]`)) {
+      cell.classList.add('current');
     }
   }
 
@@ -160,6 +164,9 @@ class Block {
   }
 
   doMagic(worker: Worker) {
+    this._isWorking = true;
+    this.updateGrid();
+
     // if notes are empty, create a new block
     if (this._noteSequence.notes.length === 0) {
       worker.postMessage(
@@ -170,22 +177,23 @@ class Block {
 
       worker.onmessage = ({ data }: { data: WorkerData }) => {
         [this._noteSequence] = data.samples;
+        this._isWorking = false;
         this.updateGrid();
       };
-      return;
+    } else {
+      // otherwise: continue current
+      worker.postMessage(
+        new WorkerData({
+          sequenceToContinue: this._noteSequence
+        })
+      );
+
+      worker.onmessage = ({ data }: { data: WorkerData }) => {
+        this._noteSequence = data.continuedSequence;
+        this._isWorking = false;
+        this.updateGrid();
+      };
     }
-    // otherwise: continue current
-
-    worker.postMessage(
-      new WorkerData({
-        sequenceToContinue: this._noteSequence
-      })
-    );
-
-    worker.onmessage = ({ data }: { data: WorkerData }) => {
-      this._noteSequence = data.continuedSequence;
-      this.updateGrid();
-    };
   }
 }
 
