@@ -1,4 +1,6 @@
-import { INoteSequence, NoteSequence, MusicVAE, MusicRNN } from '@magenta/music/es6';
+import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
+import { MusicVAE } from '@magenta/music/es6/music_vae';
+import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import * as Constants from './constants';
 import DrumKit from './drumkit';
 
@@ -176,7 +178,7 @@ class Block {
     }
     // otherwise: continue current
     drumsRnn
-      .continueSequence(this._noteSequence, Constants.RNN_STEPS, Constants.TEMPERATURE)
+      .continueSequence(this._noteSequence, Constants.TOTAL_STEPS, Constants.TEMPERATURE)
       .then((continuedSequence) => {
         this._noteSequence = continuedSequence;
         this.updateGrid();

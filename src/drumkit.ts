@@ -11,7 +11,7 @@ class DrumKit {
 
   private bassDrum = new Tone.MembraneSynth({
     volume: -30
-  }).toMaster();
+  }).toDestination();
 
   private snareDrum = new Tone.NoiseSynth({
     noise: { type: 'white' },
@@ -21,21 +21,19 @@ class DrumKit {
       sustain: 0.1,
       release: 0.4
     },
-    volume: -26
-  }).toMaster();
+    volume: -24
+  }).toDestination();
 
   private closedHihat = new Tone.MetalSynth({
-    frequency: 400,
     envelope: { attack: 0.001, decay: 0.1, release: 0.8 },
     harmonicity: 5.1,
     modulationIndex: 32,
     resonance: 4000,
     octaves: 1,
-    volume: -20
-  }).toMaster();
+    volume: -30
+  }).toDestination();
 
   private openHihat = new Tone.MetalSynth({
-    frequency: 400,
     envelope: {
       attack: 0.001,
       decay: 0.5,
@@ -46,51 +44,50 @@ class DrumKit {
     modulationIndex: 32,
     resonance: 4000,
     octaves: 1,
-    volume: -20
-  }).toMaster();
+    volume: -30
+  }).toDestination();
 
   private lowTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
-  }).toMaster();
+  }).toDestination();
 
   private midTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
-  }).toMaster();
+  }).toDestination();
 
   private highTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
-  }).toMaster();
+  }).toDestination();
 
   private crashCymbal = new Tone.MetalSynth({
-    frequency: 300,
     envelope: { attack: 0.001, decay: 1, release: 3 },
     harmonicity: 5.1,
     modulationIndex: 64,
     resonance: 4000,
     octaves: 1.5,
-    volume: -20
-  }).toMaster();
+    volume: -16
+  }).toDestination();
 
   private rideCymbal = new Tone.MetalSynth({
-    volume: -26
-  }).toMaster();
+    volume: -30
+  }).toDestination();
 
   private pitchPlayers = [
     (time: number, velocity = 1) => this.bassDrum.triggerAttackRelease('C2', '8n', time, velocity),
     (time: number, velocity = 1) => this.snareDrum.triggerAttackRelease('16n', time, velocity),
-    (time: number, velocity = 1) => this.closedHihat.triggerAttack(time, 0.3, velocity),
-    (time: number, velocity = 1) => this.openHihat.triggerAttack(time, 0.3, velocity),
+    (time: number, velocity = 1) => this.closedHihat.triggerAttackRelease('G4', 0.3, time, velocity),
+    (time: number, velocity = 1) => this.openHihat.triggerAttackRelease('G4', 0.3, time, velocity),
     (time: number, velocity = 0.5) => this.lowTom.triggerAttack('G3', time, velocity),
     (time: number, velocity = 0.5) => this.midTom.triggerAttack('C4', time, velocity),
     (time: number, velocity = 0.5) => this.highTom.triggerAttack('F4', time, velocity),
-    (time: number, velocity = 1) => this.crashCymbal.triggerAttack(time, 1.0, velocity),
-    (time: number, velocity = 1) => this.rideCymbal.triggerAttack(time, 0.5, velocity)
+    (time: number, velocity = 1) => this.crashCymbal.triggerAttackRelease('D4', 1.0, time, velocity),
+    (time: number, velocity = 1) => this.rideCymbal.triggerAttackRelease('D4', 1.0, time, velocity)
   ];
 
   static getInstance() {
@@ -101,6 +98,7 @@ class DrumKit {
   }
 
   public playNote(pitch: number, time: number, velocity: number) {
+    console.log(time);
     const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
     this.pitchPlayers[pitchIndex](time, velocity);
   }

@@ -1,6 +1,7 @@
 // @ts-ignore
 import * as Tone from 'tone';
-import { MusicVAE, MusicRNN } from '@magenta/music/es6';
+import { MusicVAE } from '@magenta/music/es6/music_vae';
+import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import interact from 'interactjs';
 
 import Block from './block';
@@ -87,8 +88,8 @@ function play() {
 
   currentStep = 0;
   Tone.Transport.scheduleRepeat((time: number) => {
-    blocks.forEach((b) => b.playStep(currentStep, time));
     blocks.forEach((b) => {
+      b.playStep(currentStep, time)
       b.currentStep = currentStep;
       b.updateGrid();
     });
@@ -192,8 +193,10 @@ interact('.grid')
         }
         const blockId = parseInt(hoveredCellElement.getAttribute('block'), 10);
         const block = blocks.find((b) => b.id === blockId);
-        block.toggleNote(hoveredCellElement);
-        moved.push(hoveredCellElement);
+        if (block) {
+          block.toggleNote(hoveredCellElement);
+          moved.push(hoveredCellElement);
+        }
       }
     }
   })
@@ -202,5 +205,7 @@ interact('.grid')
   .on('click', (event) => {
     const blockId = parseInt(event.target.getAttribute('block'), 10);
     const block = blocks.find((b) => b.id === blockId);
-    block.toggleNote(event.target);
+    if (block){
+      block.toggleNote(event.target);
+    }
   });

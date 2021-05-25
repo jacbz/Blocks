@@ -10,4 +10,3 @@ export const DRUM_NAMES = ['bass drum', 'snare drum', 'closed hi-hat', 'open hi-
 export const MAX_MIDI_VELOCITY = 127;
 
 export const TEMPERATURE = 1.1;
-export const RNN_STEPS = 20;
