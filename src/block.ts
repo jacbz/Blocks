@@ -103,26 +103,15 @@ class Block {
     }
   }
 
-  playStep(time: number, snareHasSoundedInThisStep: boolean) {
+  getPitchesToPlay(): number[] {
     if (this._muted) {
-      return;
+      return [];
     }
-    const drumkit = DrumKit.getInstance();
 
-    for (const note of this._noteSequence.notes.filter((n) => n.quantizedStartStep === this._currentStep)) {
-      const velocity = Object.prototype.hasOwnProperty.call(note, 'velocity')
-        ? note.velocity / Constants.MAX_MIDI_VELOCITY
-        : undefined;
-
-      // to remove
-      if (snareHasSoundedInThisStep && note.pitch == 38) { continue; }
-
-      drumkit.playNote(note.pitch, time, velocity);
-    }
-  }
-
-  snareDrumInStep() {
-    return this._noteSequence.notes.filter((n) => n.quantizedStartStep === this._currentStep).some(n => n.pitch == 38);
+    return Array.from(
+      this._noteSequence.notes.filter((n) => n.quantizedStartStep === this._currentStep),
+      (n) => n.pitch
+    );
   }
 
   toggleNote(cellElement: HTMLElement) {

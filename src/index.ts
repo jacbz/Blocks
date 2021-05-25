@@ -74,10 +74,7 @@ function init() {
     'https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn'
   );
 
-  Promise.all([
-    drumsVae.initialize(),
-    drumsRnn.initialize()
-  ]).then(() => {
+  Promise.all([drumsVae.initialize(), drumsRnn.initialize()]).then(() => {
     finishLoading();
   });
 }
@@ -85,19 +82,22 @@ function init() {
 function play() {
   const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
 
-  // hack to prevent two snare drums from sounding at once (doesn't work since not polyphonic)
-  let snareHasSoundedInThisStep = false;
-
   currentStep = 0;
   Tone.Transport.scheduleRepeat((time: number) => {
+    const pitchToCountMap = new Map<number, number>();
     blocks.forEach((b) => {
       b.currentStep = currentStep;
-      b.playStep(time, snareHasSoundedInThisStep);
-      snareHasSoundedInThisStep = b.snareDrumInStep() && !snareHasSoundedInThisStep ? true : snareHasSoundedInThisStep;
+      b.getPitchesToPlay().forEach((p) =>
+        pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1)
+      );
       b.updateGrid();
     });
+
+    for (let [pitch, count] of pitchToCountMap) {
+      drumkit.playNote(pitch, time, count);
+    }
+
     currentStep = (currentStep + 1) % Constants.TOTAL_STEPS;
-    snareHasSoundedInThisStep = false;
   }, smallestDivision);
 
   Tone.Transport.start();
@@ -137,7 +137,7 @@ for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
   button.addEventListener('click', () => {
     Tone.Transport.start();
     Tone.Transport.schedule((time: number) => {
-      drumkit.playNote(Constants.DRUM_PITCHES[i], time, undefined);
+      drumkit.playNote(Constants.DRUM_PITCHES[i], time, 1);
     }, '+0');
   });
   container.appendChild(button);
@@ -209,7 +209,7 @@ interact('.grid')
   .on('click', (event) => {
     const blockId = parseInt(event.target.getAttribute('block'), 10);
     const block = blocks.find((b) => b.id === blockId);
-    if (block){
+    if (block) {
       block.toggleNote(event.target);
     }
   });

@@ -8,11 +8,10 @@ import * as Constants from './constants';
 class DrumKit {
   private static instance: DrumKit;
 
-  private bassDrum = new Tone.PolySynth(Tone.MembraneSynth, {
-    volume: -30
+  private bassDrum = new Tone.MembraneSynth({
+    volume: -3
   }).toDestination();
 
-  // TODO: transition to PolySynth
   private snareDrum = new Tone.NoiseSynth({
     noise: { type: 'white' },
     envelope: {
@@ -21,19 +20,19 @@ class DrumKit {
       sustain: 0.1,
       release: 0.4
     },
-    volume: -24
+    volume: -10
   }).toDestination();
 
-  private closedHihat = new Tone.PolySynth(Tone.MetalSynth, {
+  private closedHihat = new Tone.MetalSynth({
     envelope: { attack: 0.001, decay: 0.1, release: 0.8 },
     harmonicity: 5.1,
     modulationIndex: 32,
     resonance: 4000,
     octaves: 1,
-    volume: -30
+    volume: -10
   }).toDestination();
 
-  private openHihat = new Tone.PolySynth(Tone.MetalSynth, {
+  private openHihat = new Tone.MetalSynth({
     envelope: {
       attack: 0.001,
       decay: 0.5,
@@ -44,50 +43,59 @@ class DrumKit {
     modulationIndex: 32,
     resonance: 4000,
     octaves: 1,
-    volume: -30
+    volume: -10
   }).toDestination();
 
-  private lowTom = new Tone.PolySynth(Tone.MembraneSynth, {
+  private lowTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
-    envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
-    volume: -20
+    envelope: { attack: 0.01, decay: 0.5, sustain: 0 }
   }).toDestination();
 
-  private midTom = new Tone.PolySynth(Tone.MembraneSynth, {
+  private midTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
-    envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
-    volume: -20
+    envelope: { attack: 0.01, decay: 0.5, sustain: 0 }
   }).toDestination();
 
-  private highTom = new Tone.PolySynth(Tone.MembraneSynth, {
+  private highTom = new Tone.MembraneSynth({
     pitchDecay: 0.008,
-    envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
-    volume: -20
+    envelope: { attack: 0.01, decay: 0.5, sustain: 0 }
   }).toDestination();
 
-  private crashCymbal = new Tone.PolySynth(Tone.MetalSynth, {
+  private crashCymbal = new Tone.MetalSynth({
     envelope: { attack: 0.001, decay: 1, release: 3 },
     harmonicity: 5.1,
     modulationIndex: 64,
     resonance: 4000,
     octaves: 1.5,
-    volume: -16
+    volume: -6
   }).toDestination();
 
-  private rideCymbal = new Tone.PolySynth(Tone.MetalSynth, {
-    volume: -30
+  private rideCymbal = new Tone.MetalSynth({
+    volume: -6
   }).toDestination();
+
+  private pitchSynths = [
+    this.bassDrum,
+    this.snareDrum,
+    this.closedHihat,
+    this.openHihat,
+    this.lowTom,
+    this.midTom,
+    this.highTom,
+    this.crashCymbal,
+    this.rideCymbal
+  ];
 
   private pitchPlayers = [
-    (time: number, velocity = 1) => this.bassDrum.triggerAttackRelease('C2', '8n', time, velocity),
-    (time: number, velocity = 1) => this.snareDrum.triggerAttackRelease('16n', time, velocity),
-    (time: number, velocity = 1) => this.closedHihat.triggerAttackRelease('G4', 0.3, time, velocity),
-    (time: number, velocity = 1) => this.openHihat.triggerAttackRelease('G4', 0.3, time, velocity),
-    (time: number, velocity = 0.5) => this.lowTom.triggerAttack('G3', time, velocity),
-    (time: number, velocity = 0.5) => this.midTom.triggerAttack('C4', time, velocity),
-    (time: number, velocity = 0.5) => this.highTom.triggerAttack('F4', time, velocity),
-    (time: number, velocity = 1) => this.crashCymbal.triggerAttackRelease('D4', 1.0, time, velocity),
-    (time: number, velocity = 1) => this.rideCymbal.triggerAttackRelease('D4', 1.0, time, velocity)
+    (time: number, velocity: number) => this.bassDrum.triggerAttackRelease('C2', '8n', time, velocity),
+    (time: number, velocity: number) => this.snareDrum.triggerAttackRelease('16n', time, velocity),
+    (time: number, velocity: number) => this.closedHihat.triggerAttackRelease('G4', 0.3, time, velocity),
+    (time: number, velocity: number) => this.openHihat.triggerAttackRelease('G4', 0.3, time, velocity),
+    (time: number, velocity: number) => this.lowTom.triggerAttack('G3', time, velocity),
+    (time: number, velocity: number) => this.midTom.triggerAttack('C4', time, velocity),
+    (time: number, velocity: number) => this.highTom.triggerAttack('F4', time, velocity),
+    (time: number, velocity: number) => this.crashCymbal.triggerAttackRelease('D4', 1.0, time, velocity),
+    (time: number, velocity: number) => this.rideCymbal.triggerAttackRelease('D4', 1.0, time, velocity)
   ];
 
   static getInstance() {
@@ -97,8 +105,9 @@ class DrumKit {
     return DrumKit.instance;
   }
 
-  public playNote(pitch: number, time: number, velocity: number) {
+  public playNote(pitch: number, time: number, count: number) {
     const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
+    const velocity = Math.min(0.3, 0.1 + (count - 1) * 0.08);
     this.pitchPlayers[pitchIndex](time, velocity);
   }
 }
