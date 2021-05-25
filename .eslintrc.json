@@ -22,7 +22,8 @@
       {
         "ImportDeclaration": "never"
       }
-    ]
+    ],
+    "operator-linebreak": "off"
   },
   "settings": {
     "import/resolver": {
