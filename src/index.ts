@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as Tone from 'tone';
 import { MusicVAE } from '@magenta/music/es6/music_vae';
 import { MusicRNN } from '@magenta/music/es6/music_rnn';
@@ -86,14 +85,19 @@ function init() {
 function play() {
   const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
 
+  // hack to prevent two snare drums from sounding at once (doesn't work since not polyphonic)
+  let snareHasSoundedInThisStep = false;
+
   currentStep = 0;
   Tone.Transport.scheduleRepeat((time: number) => {
     blocks.forEach((b) => {
-      b.playStep(currentStep, time)
       b.currentStep = currentStep;
+      b.playStep(time, snareHasSoundedInThisStep);
+      snareHasSoundedInThisStep = b.snareDrumInStep() && !snareHasSoundedInThisStep ? true : snareHasSoundedInThisStep;
       b.updateGrid();
     });
     currentStep = (currentStep + 1) % Constants.TOTAL_STEPS;
+    snareHasSoundedInThisStep = false;
   }, smallestDivision);
 
   Tone.Transport.start();

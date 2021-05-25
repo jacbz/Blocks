@@ -2,17 +2,17 @@
  * A singleton drum kit synthesizer with 9 pitch classes. Based on Magenta.js drumkit.
  */
 
-// @ts-ignore
 import * as Tone from 'tone';
 import * as Constants from './constants';
 
 class DrumKit {
   private static instance: DrumKit;
 
-  private bassDrum = new Tone.MembraneSynth({
+  private bassDrum = new Tone.PolySynth(Tone.MembraneSynth, {
     volume: -30
   }).toDestination();
 
+  // TODO: transition to PolySynth
   private snareDrum = new Tone.NoiseSynth({
     noise: { type: 'white' },
     envelope: {
@@ -24,7 +24,7 @@ class DrumKit {
     volume: -24
   }).toDestination();
 
-  private closedHihat = new Tone.MetalSynth({
+  private closedHihat = new Tone.PolySynth(Tone.MetalSynth, {
     envelope: { attack: 0.001, decay: 0.1, release: 0.8 },
     harmonicity: 5.1,
     modulationIndex: 32,
@@ -33,7 +33,7 @@ class DrumKit {
     volume: -30
   }).toDestination();
 
-  private openHihat = new Tone.MetalSynth({
+  private openHihat = new Tone.PolySynth(Tone.MetalSynth, {
     envelope: {
       attack: 0.001,
       decay: 0.5,
@@ -47,25 +47,25 @@ class DrumKit {
     volume: -30
   }).toDestination();
 
-  private lowTom = new Tone.MembraneSynth({
+  private lowTom = new Tone.PolySynth(Tone.MembraneSynth, {
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
   }).toDestination();
 
-  private midTom = new Tone.MembraneSynth({
+  private midTom = new Tone.PolySynth(Tone.MembraneSynth, {
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
   }).toDestination();
 
-  private highTom = new Tone.MembraneSynth({
+  private highTom = new Tone.PolySynth(Tone.MembraneSynth, {
     pitchDecay: 0.008,
     envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
     volume: -20
   }).toDestination();
 
-  private crashCymbal = new Tone.MetalSynth({
+  private crashCymbal = new Tone.PolySynth(Tone.MetalSynth, {
     envelope: { attack: 0.001, decay: 1, release: 3 },
     harmonicity: 5.1,
     modulationIndex: 64,
@@ -74,7 +74,7 @@ class DrumKit {
     volume: -16
   }).toDestination();
 
-  private rideCymbal = new Tone.MetalSynth({
+  private rideCymbal = new Tone.PolySynth(Tone.MetalSynth, {
     volume: -30
   }).toDestination();
 
@@ -98,7 +98,6 @@ class DrumKit {
   }
 
   public playNote(pitch: number, time: number, velocity: number) {
-    console.log(time);
     const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
     this.pitchPlayers[pitchIndex](time, velocity);
   }
