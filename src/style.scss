@@ -32,13 +32,9 @@ header {
   user-select: none;
 }
 
-.container {
-  margin: 16px 30px 16px 30px;
+.centered {
   flex: 1;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 1em;
-  width: calc(95vw - 40px);
-  overflow: hidden;
+  margin: 16px 30px 16px 30px;
 }
 
 #loading {
@@ -51,9 +47,23 @@ header {
   }
 }
 
-#actions {
+#contents {
   display: flex;
+  flex-direction: column;
   gap: 12px;
+
+  #actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  #container {
+    background: rgba(0, 0, 0, 0.25);
+    width: calc(95vw - 40px);
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
 }
 
 .block {
@@ -63,6 +73,7 @@ header {
   padding: 6px;
   margin: 16px;
   border-radius: 4px;
+  position: absolute;
 
   .block-actions {
     display: flex;
@@ -207,7 +218,7 @@ $muted-color: red;
   flex-direction: column-reverse;
   width: 150px;
   position: absolute;
-  right: 100px;
+  right: 30px;
   zoom: 0.75;
 }
 
