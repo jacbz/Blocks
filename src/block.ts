@@ -66,6 +66,10 @@ class Block {
         cellElement.setAttribute('block', this._id.toString());
         cellElement.setAttribute('row', row.toString());
         cellElement.setAttribute('col', col.toString());
+
+        if (col % 16 < 8) {
+          cellElement.setAttribute('zebra', '');
+        }
         rowElement.appendChild(cellElement);
       }
     }

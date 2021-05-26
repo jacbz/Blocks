@@ -126,7 +126,7 @@ $cell-spacing: 1.6px;
   flex-flow: row;
 }
 
-$cell-color: rgb(50, 50, 50);
+$cell-color: rgb(52, 52, 52);
 $active-color: rgb(112, 153, 148);
 .cell {
   margin-right: $cell-spacing;
@@ -134,6 +134,10 @@ $active-color: rgb(112, 153, 148);
   background: $cell-color;
   flex: 1;
   cursor: pointer;
+
+  &[zebra] {
+    background: color.adjust($cell-color, $lightness: -3);
+  }
 
   &:hover {
     background: color.adjust($cell-color, $lightness: +10);
