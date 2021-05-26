@@ -64,6 +64,11 @@ class BlockManager {
       block.doMagic(this._worker);
     });
 
+    const continueButton = block.element.querySelector('#continue-button');
+    continueButton.addEventListener('click', () => {
+      block.continue(this._worker);
+    });
+
     const deleteButton = block.element.querySelector('#delete-button');
     deleteButton.addEventListener('click', () => {
       this._blocks.splice(this._blocks.indexOf(block), 1);
@@ -158,7 +163,7 @@ class BlockManager {
       const blockY = b.element.style.top ? parseFloat(b.element.style.top) : 0;
       return (
         blockX + blockWidth >= x &&
-        blockY + blockHeight >= y &&
+        blockX <= x + blockWidth &&
         blockY + blockHeight >= y &&
         blockY <= y + blockHeight
       );

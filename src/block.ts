@@ -171,33 +171,34 @@ class Block {
     this._isWorking = true;
     this.updateGrid();
 
-    // if notes are empty, create a new block
-    if (this._noteSequence.notes.length === 0) {
-      worker.postMessage(
-        new WorkerData({
-          numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
-        })
-      );
+    worker.postMessage(
+      new WorkerData({
+        numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
+      })
+    );
 
-      worker.onmessage = ({ data }: { data: WorkerData }) => {
-        [this._noteSequence] = data.samples;
-        this._isWorking = false;
-        this.updateGrid();
-      };
-    } else {
-      // otherwise: continue current
-      worker.postMessage(
-        new WorkerData({
-          sequenceToContinue: this._noteSequence
-        })
-      );
+    worker.onmessage = ({ data }: { data: WorkerData }) => {
+      [this._noteSequence] = data.samples;
+      this._isWorking = false;
+      this.updateGrid();
+    };
+  }
 
-      worker.onmessage = ({ data }: { data: WorkerData }) => {
-        this._noteSequence = data.continuedSequence;
-        this._isWorking = false;
-        this.updateGrid();
-      };
-    }
+  continue(worker: Worker) {
+    this._isWorking = true;
+    this.updateGrid();
+
+    worker.postMessage(
+      new WorkerData({
+        sequenceToContinue: this._noteSequence
+      })
+    );
+
+    worker.onmessage = ({ data }: { data: WorkerData }) => {
+      this._noteSequence = data.continuedSequence;
+      this._isWorking = false;
+      this.updateGrid();
+    };
   }
 }
 

@@ -208,6 +208,14 @@ $muted-color: red;
   }
 }
 
+#continue-button {
+  @extend %fa-icon;
+  @extend .fas;
+  &:before {
+    content: fa-content($fa-var-angle-double-right);
+  }
+}
+
 #delete-button {
   @extend %fa-icon;
   @extend .fas;
@@ -222,8 +230,9 @@ $muted-color: red;
   flex-direction: column-reverse;
   width: 150px;
   position: absolute;
-  right: 30px;
-  zoom: 0.75;
+  top: 0;
+  right: 0;
+  transform: scale(0.75);
 }
 
 footer {
