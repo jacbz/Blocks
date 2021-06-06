@@ -105,13 +105,13 @@ class BlockManager {
     const deleteButton = block.element.querySelector('#delete-button');
     deleteButton.addEventListener('click', () => {
       this._blocks.splice(this._blocks.indexOf(block), 1);
-      block.element.parentElement.removeChild(block.element);
+      block.element.remove();
     });
 
     block.init();
   }
 
-  initBlockChain(block: Block): BlockChain {
+  initBlockchain(block: Block): BlockChain {
     const blockChainTemplate = document.getElementById(
       'blockchain-template'
     ) as HTMLTemplateElement;
@@ -125,12 +125,24 @@ class BlockManager {
     this._containerElement.appendChild(blockChainElement);
     this._containerElement.removeChild(block.element);
 
-    const blockChain = new BlockChain(block, blockChainElement);
+    const blockchain = new BlockChain(block, blockChainElement);
     const index = this._blocks.indexOf(block);
-    this._blocks[index] = blockChain;
+    this._blocks[index] = blockchain;
 
-    blockChain.init();
-    return blockChain;
+    const muteButton = blockChainElement.querySelector('#mute-button');
+    muteButton.addEventListener('click', () => {
+      muteButton.classList.toggle('muted');
+      blockchain.toggleMute();
+    });
+
+    const deleteButton = blockChainElement.querySelector('#delete-button');
+    deleteButton.addEventListener('click', () => {
+      this._blocks.splice(this._blocks.indexOf(blockchain), 1);
+      blockChainElement.remove();
+    });
+
+    blockchain.init();
+    return blockchain;
   }
 
   chainBlock(block1: Block, block2: Block) {
@@ -142,7 +154,7 @@ class BlockManager {
     if (blockChain1) {
       blockChain1.addBlockAfter(block1, block2);
     } else {
-      const blockchain = this.initBlockChain(block1);
+      const blockchain = this.initBlockchain(block1);
       blockchain.addBlock(block2);
     }
 
@@ -157,11 +169,14 @@ class BlockManager {
   }
 
   // removes a block from a blockchain
-  releaseBlock(block: Block) {
+  releaseBlock(block: Block, isLastBlock = false) {
     const containerRect = this._containerElement.getBoundingClientRect();
     const blockRect = block.element.getBoundingClientRect();
 
     const blockchain = this.getBlockChainOfBlock(block);
+    if (blockchain.length === 2 && !isLastBlock) {
+      this.releaseBlock(blockchain.last, true);
+    }
     blockchain.removeBlock(block);
     this._blocks.push(block);
 
@@ -171,14 +186,11 @@ class BlockManager {
 
     this._containerElement.appendChild(block.element);
 
-    if (blockchain.length < 2) this.destroyBlockChain(blockchain);
+    if (blockchain.length === 0) this.destroyBlockChain(blockchain);
   }
 
-  // remove blockchain if only one element is remaining
+  // remove empty blockchain
   destroyBlockChain(blockchain: BlockChain) {
-    if (blockchain.length === 1) {
-      this.releaseBlock(blockchain.first);
-    }
     this._blocks = this._blocks.filter((b) => b !== blockchain);
     blockchain.element.remove();
   }

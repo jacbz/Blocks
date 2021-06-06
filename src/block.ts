@@ -34,6 +34,14 @@ class Block implements IBlockObject {
 
   private _muted: boolean;
 
+  get muted() {
+    return this._muted;
+  }
+
+  set muted(muted: boolean) {
+    this._muted = muted;
+  }
+
   private _isWorking: boolean;
 
   constructor(id: number, noteSequence?: INoteSequence) {

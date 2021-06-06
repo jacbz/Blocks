@@ -17,6 +17,10 @@ class BlockChain implements IBlockObject {
     return this._blocks[0];
   }
 
+  get last() {
+    return this._blocks[this._blocks.length - 1];
+  }
+
   private _element: HTMLElement;
 
   get element() {
@@ -27,6 +31,16 @@ class BlockChain implements IBlockObject {
 
   get currentStep() {
     return this._currentStep;
+  }
+
+  private _muted: boolean;
+
+  get muted() {
+    return this._muted;
+  }
+
+  set muted(muted: boolean) {
+    this._muted = muted;
   }
 
   set currentStep(currentStep: number) {
@@ -57,6 +71,9 @@ class BlockChain implements IBlockObject {
   }
 
   getPitchesToPlay(): number[] {
+    if (this._muted) {
+      return [];
+    }
     const playingBlock = Math.floor(this._currentStep / Constants.TOTAL_STEPS);
     return this._blocks[playingBlock].getPitchesToPlay();
   }
@@ -83,6 +100,14 @@ class BlockChain implements IBlockObject {
     this._blocks = this.blocks.filter((b) => b !== block);
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.removeChild(block.element);
+  }
+
+  toggleMute() {
+    this._muted = !this.muted;
+    for (const block of this._blocks) {
+      block.muted = !block.muted;
+      block.element.querySelector('.grid').classList.toggle('muted');
+    }
   }
 }
 
