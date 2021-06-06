@@ -80,6 +80,7 @@ header {
 
   .blocks {
     margin: 4px;
+    display: flex;
 
     $block-padding: 8px;
     $border-radius: 4px;

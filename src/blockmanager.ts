@@ -8,7 +8,7 @@ import WorkerData from './worker';
 class BlockManager {
   private _containerElement: HTMLDivElement;
 
-  private _blocks: IBlockObject[];
+  private _blockObjects: IBlockObject[];
 
   private _worker: Worker;
 
@@ -16,7 +16,7 @@ class BlockManager {
 
   constructor(containerElement: HTMLDivElement, worker: Worker) {
     this._containerElement = containerElement;
-    this._blocks = [];
+    this._blockObjects = [];
     this._worker = worker;
 
     this.initInteractEvents();
@@ -24,25 +24,28 @@ class BlockManager {
 
   // eslint-disable-next-line no-unused-vars
   do(func: (b: IBlockObject) => void) {
-    this._blocks.forEach(func);
+    this._blockObjects.forEach(func);
+  }
+
+  getAllBlocks(): Block[] {
+    return this._blockObjects.reduce((arr, blockObject) => {
+      if (blockObject instanceof Block) {
+        return [...arr, blockObject];
+      }
+      if (blockObject instanceof BlockChain) {
+        return [...arr, ...blockObject.blocks];
+      }
+      return arr;
+    }, []);
   }
 
   getBlockById(id: number): Block {
-    for (const blockObject of this._blocks) {
-      if (blockObject instanceof Block) {
-        if (blockObject.id === id) return blockObject;
-      }
-      if (blockObject instanceof BlockChain) {
-        const find = blockObject.blocks.find((b) => b.id === id);
-        if (find) return find;
-      }
-    }
-    return null;
+    return this.getAllBlocks().find((b) => b.id === id);
   }
 
   // return null if block is not in any blockchain
   getBlockChainOfBlock(block: Block): BlockChain {
-    for (const blockChain of this._blocks.filter((b) => b instanceof BlockChain)) {
+    for (const blockChain of this._blockObjects.filter((b) => b instanceof BlockChain)) {
       if ((blockChain as BlockChain).blocks.find((b) => b === block)) {
         return blockChain as BlockChain;
       }
@@ -51,17 +54,7 @@ class BlockManager {
   }
 
   createBlock() {
-    const id =
-      this._blocks.reduce((highestId, blockObject) => {
-        if (blockObject instanceof Block) {
-          return Math.max(highestId, blockObject.id);
-        }
-        if (blockObject instanceof BlockChain) {
-          return Math.max(highestId, ...blockObject.blocks.map((bc) => bc.id));
-        }
-        return 0;
-      }, 0) + 1;
-
+    const id = Math.max(...this.getAllBlocks().map((b) => b.id)) + 1;
     const block = new Block(id);
     this.initBlock(block);
   }
@@ -70,7 +63,7 @@ class BlockManager {
     // position
     const coords = this.findFreeSpaceInContainer();
 
-    this._blocks.push(block);
+    this._blockObjects.push(block);
     const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
     block.element = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector('.block');
     block.element.style.left = `${coords[0]}px`;
@@ -104,7 +97,7 @@ class BlockManager {
 
     const deleteButton = block.element.querySelector('#delete-button');
     deleteButton.addEventListener('click', () => {
-      this._blocks.splice(this._blocks.indexOf(block), 1);
+      this._blockObjects.splice(this._blockObjects.indexOf(block), 1);
       block.element.remove();
     });
 
@@ -126,8 +119,8 @@ class BlockManager {
     this._containerElement.removeChild(block.element);
 
     const blockchain = new BlockChain(block, blockChainElement);
-    const index = this._blocks.indexOf(block);
-    this._blocks[index] = blockchain;
+    const index = this._blockObjects.indexOf(block);
+    this._blockObjects[index] = blockchain;
 
     const muteButton = blockChainElement.querySelector('#mute-button');
     muteButton.addEventListener('click', () => {
@@ -137,7 +130,7 @@ class BlockManager {
 
     const deleteButton = blockChainElement.querySelector('#delete-button');
     deleteButton.addEventListener('click', () => {
-      this._blocks.splice(this._blocks.indexOf(blockchain), 1);
+      this._blockObjects.splice(this._blockObjects.indexOf(blockchain), 1);
       blockChainElement.remove();
     });
 
@@ -164,7 +157,7 @@ class BlockManager {
         this.releaseBlock(blockChain2.first);
       }
     } else {
-      this._blocks = this._blocks.filter((b) => b !== block2);
+      this._blockObjects = this._blockObjects.filter((b) => b !== block2);
     }
   }
 
@@ -178,7 +171,7 @@ class BlockManager {
       this.releaseBlock(blockchain.last, true);
     }
     blockchain.removeBlock(block);
-    this._blocks.push(block);
+    this._blockObjects.push(block);
 
     // recalculate position
     block.element.style.left = `${blockRect.x - containerRect.x}px`;
@@ -191,7 +184,7 @@ class BlockManager {
 
   // remove empty blockchain
   destroyBlockChain(blockchain: BlockChain) {
-    this._blocks = this._blocks.filter((b) => b !== blockchain);
+    this._blockObjects = this._blockObjects.filter((b) => b !== blockchain);
     blockchain.element.remove();
   }
 
@@ -214,7 +207,7 @@ class BlockManager {
     // make blocks draggable
     interact('.block').draggable({
       // inertia: true,
-      ignoreFrom: '.grid',
+      ignoreFrom: '.grid, button',
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: blockManager._containerElement,
@@ -247,7 +240,7 @@ class BlockManager {
 
     interact('.blockchain').draggable({
       // inertia: true,
-      ignoreFrom: '.grid',
+      ignoreFrom: '.grid, button',
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: blockManager._containerElement,
@@ -357,45 +350,47 @@ class BlockManager {
 
   // eslint-disable-next-line class-methods-use-this
   findFreeSpaceInContainer(): number[] {
-    return [0, 0];
-    // if (this._blocks.every((b) => !b.element)) {
-    //   return [0, 0];
-    // }
-    // const containerWidth = this._containerElement.offsetWidth;
-    // const containerHeight = this._containerElement.offsetHeight;
-    // const blockWidth = 350;
-    // const blockHeight = 120;
-    // const margin = 16;
+    const blocks = this.getAllBlocks();
+    if (blocks.every((b) => !b.element)) {
+      return [16, 16];
+    }
+    const containerWidth = this._containerElement.offsetWidth;
+    const containerHeight = this._containerElement.offsetHeight;
+    const blockWidth = 360;
+    const blockHeight = 130;
+    const margin = 16;
 
-    // const maxPermittedX = containerWidth - blockWidth - margin;
-    // const maxPermittedY = containerHeight - blockHeight - margin;
+    const maxPermittedX = containerWidth - blockWidth - margin;
+    const maxPermittedY = containerHeight - blockHeight - margin;
 
-    // let coords = [0, 0];
-    // let tries = 0;
-    // do {
-    //   coords = [Math.random() * maxPermittedX, Math.random() * maxPermittedY];
-    //   tries += 1;
-    // } while (this.anyBlockOccupying(coords[0], coords[1]) && tries < 100);
+    let coords = [0, 0];
+    let tries = 0;
+    do {
+      coords = [Math.random() * maxPermittedX, Math.random() * maxPermittedY];
+      tries += 1;
+    } while (this.anyBlockOccupying(coords[0], coords[1], blocks) && tries < 100);
 
-    // return coords;
+    return coords;
   }
 
   // eslint-disable-next-line class-methods-use-this
-  anyBlockOccupying(x: number, y: number): boolean {
-    return false;
-    // const blockWidth = 350;
-    // const blockHeight = 120;
+  anyBlockOccupying(x: number, y: number, blocks: Block[]): boolean {
+    const blockWidth = 360;
+    const blockHeight = 130;
 
-    // return this._blocks.some((b) => {
-    //   const blockX = b.element.style.left ? parseFloat(b.element.style.left) : 0;
-    //   const blockY = b.element.style.top ? parseFloat(b.element.style.top) : 0;
-    //   return (
-    //     blockX + blockWidth >= x &&
-    //     blockX <= x + blockWidth &&
-    //     blockY + blockHeight >= y &&
-    //     blockY <= y + blockHeight
-    //   );
-    // });
+    const containerRect = this._containerElement.getBoundingClientRect();
+    return blocks
+      .some((b) => {
+        const blockRect = b.element.getBoundingClientRect();
+        const blockX = blockRect.x - containerRect.x;
+        const blockY = blockRect.y - containerRect.y;
+        return (
+          blockX + blockWidth >= x &&
+          blockX <= x + blockWidth &&
+          blockY + blockHeight >= y &&
+          blockY <= y + blockHeight
+        );
+      });
   }
 }
 
