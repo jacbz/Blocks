@@ -114,13 +114,21 @@ class BlockChain implements IBlockObject {
     blocksElement.insertBefore(newBlock.element, block.element.nextSibling);
     this.render();
     this.adjustZIndex();
+
+    if (this._interpolatedBlock === newBlock) {
+      this.stopInterpolate();
+    }
   }
 
   removeBlock(block: Block) {
-    this._blocks = this.blocks.filter((b) => b !== block);
-    const blocksElement = this.element.querySelector('.blocks');
-    blocksElement.removeChild(block.element);
-    this.adjustZIndex();
+    if (this._interpolatedBlock === block) {
+      this.stopInterpolate();
+    } else {
+      this._blocks = this.blocks.filter((b) => b !== block);
+      const blocksElement = this.element.querySelector('.blocks');
+      blocksElement.removeChild(block.element);
+      this.adjustZIndex();
+    }
   }
 
   toggleMute() {
@@ -140,9 +148,6 @@ class BlockChain implements IBlockObject {
 
   interpolate(blockmanager: BlockManager) {
     if (this._interpolatedBlock) {
-      if (!this._muted) {
-        this.toggleMute();
-      }
       this.stopInterpolate();
       return;
     }
@@ -160,9 +165,9 @@ class BlockChain implements IBlockObject {
     });
     slider.valueAsNumber = Math.floor(Constants.INTERPOLATION_LENGTH / 2);
 
-    const blockElement = this._element.querySelector('#interpolate .block') as HTMLDivElement;
-    const block = new Block(blockmanager.nextId(), blockElement);
+    const block = new Block(blockmanager.nextId(), blockmanager);
     block.init();
+    interpolateElement.querySelector('.panel').insertBefore(block.element, slider);
     this._interpolatedBlock = block;
 
     AppWorker.generateInterpolatedSamples(this.first.noteSequence, this.last.noteSequence).then(
@@ -179,6 +184,10 @@ class BlockChain implements IBlockObject {
     this._interpolatedSamples = undefined;
     const interpolateElement = this.element.querySelector('#interpolate');
     interpolateElement.classList.remove('open');
+    interpolateElement.querySelectorAll('.block').forEach((block) => block.remove());
+    if (this._muted) {
+      this.toggleMute();
+    }
   }
 }
 

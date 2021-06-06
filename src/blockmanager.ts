@@ -31,11 +31,9 @@ class BlockManager {
         return [...arr, blockObject];
       }
       if (blockObject instanceof BlockChain) {
-        const { blocks } = blockObject;
-        if (blockObject.interpolatedBlock) {
-          blocks.push(blockObject.interpolatedBlock);
-        }
-        return [...arr, ...blocks];
+        return blockObject.interpolatedBlock
+          ? [...arr, ...blockObject.blocks, blockObject.interpolatedBlock]
+          : [...arr, ...blockObject.blocks];
       }
       return arr;
     }, []);
@@ -48,8 +46,9 @@ class BlockManager {
   // return null if block is not in any blockchain
   getBlockChainOfBlock(block: Block): BlockChain {
     for (const blockChain of this._blockObjects.filter((b) => b instanceof BlockChain)) {
-      if ((blockChain as BlockChain).blocks.find((b) => b === block)) {
-        return blockChain as BlockChain;
+      const bc = blockChain as BlockChain;
+      if (bc.interpolatedBlock === block || bc.blocks.find((b) => b === block)) {
+        return bc;
       }
     }
     return null;
@@ -60,24 +59,20 @@ class BlockManager {
     return blocks.length > 0 ? Math.max(...blocks.map((b) => b.id)) + 1 : 0;
   }
 
-  initBlock(noteSequence?: INoteSequence) {
+  createBlockDom(block: Block, findFreeSpace = false) {
     // position
-    const coords = this.findFreeSpaceInContainer();
-
     const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
     const blockElement = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector(
       '.block'
     ) as HTMLDivElement;
-    blockElement.style.left = `${coords[0]}px`;
-    blockElement.style.top = `${coords[1]}px`;
 
-    const block = new Block(this.nextId(), blockElement);
-    block.noteSequence = noteSequence || Block.defaultNoteSequence();
-    this._blockObjects.push(block);
+    if (findFreeSpace) {
+      const coords = this.findFreeSpaceInContainer();
+      blockElement.style.left = `${coords[0]}px`;
+      blockElement.style.top = `${coords[1]}px`;
+    }
 
-    this._containerElement.appendChild(blockElement);
-
-    const grid = block.element.querySelector('.grid');
+    const grid = blockElement.querySelector('.grid');
     grid.addEventListener(
       'mouseover',
       (event: Event) => {
@@ -86,32 +81,40 @@ class BlockManager {
       false
     );
 
-    const muteButton = block.element.querySelector('#mute-button');
+    const muteButton = blockElement.querySelector('#mute-button');
     muteButton.addEventListener('click', () => {
       muteButton.classList.toggle('muted');
       block.toggleMute();
     });
 
-    const magicButton = block.element.querySelector('#magic-button');
+    const magicButton = blockElement.querySelector('#magic-button');
     magicButton.addEventListener('click', () => {
       block.doMagic();
     });
 
-    const continueButton = block.element.querySelector('#continue-button');
+    const continueButton = blockElement.querySelector('#continue-button');
     continueButton.addEventListener('click', () => {
       block.continue();
     });
 
-    const deleteButton = block.element.querySelector('#delete-button');
+    const deleteButton = blockElement.querySelector('#delete-button');
     deleteButton.addEventListener('click', () => {
       this._blockObjects.splice(this._blockObjects.indexOf(block), 1);
       block.element.remove();
     });
+    return blockElement;
+  }
 
+  createBlock(noteSequence?: INoteSequence) {
+    const block = new Block(this.nextId(), this, true);
+    block.noteSequence = noteSequence || Block.defaultNoteSequence();
+    this._blockObjects.push(block);
+
+    this._containerElement.appendChild(block.element);
     block.init();
   }
 
-  initBlockchain(block: Block): BlockChain {
+  initBlockchainDom(block: Block): BlockChain {
     const blockChainTemplate = document.getElementById(
       'blockchain-template'
     ) as HTMLTemplateElement;
@@ -153,11 +156,10 @@ class BlockManager {
 
     const blockChain1 = this.getBlockChainOfBlock(block1);
     const blockChain2 = this.getBlockChainOfBlock(block2);
-
     if (blockChain1) {
       blockChain1.addBlockAfter(block1, block2);
     } else {
-      const blockchain = this.initBlockchain(block1);
+      const blockchain = this.initBlockchainDom(block1);
       blockchain.addBlock(block2);
     }
 
@@ -177,7 +179,9 @@ class BlockManager {
 
     // if there are only two blocks left, release both (but last one first to preserve pos)
     const blocksToRelease =
-      blockchain.length === 2 ? [blockchain.last, blockchain.first] : [blockToRelease];
+      blockchain.length === 2 && blockToRelease !== blockchain.interpolatedBlock
+        ? [blockchain.last, blockchain.first]
+        : [blockToRelease];
     for (const block of blocksToRelease) {
       const containerRect = this._containerElement.getBoundingClientRect();
       const blockRect = block.element.getBoundingClientRect();
@@ -303,7 +307,12 @@ class BlockManager {
         draggable,
         draggableElement
       ) => {
-        const blockchainRect = draggableElement.closest('.blockchain').getBoundingClientRect();
+        // don't trigger drop if dropped within blockchain / interpolation panel
+        let parent = '.blockchain';
+        if (draggableElement.closest('#interpolate')) {
+          parent = '#interpolate';
+        }
+        const blockchainRect = draggableElement.closest(parent).getBoundingClientRect();
         const mouseIsInsideBlockchain =
           event.clientX >= blockchainRect.left &&
           event.clientX <= blockchainRect.right &&

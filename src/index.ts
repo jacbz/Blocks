@@ -26,7 +26,7 @@ function init() {
 function initStartingBlocks() {
   AppWorker.generateSamples(Constants.NUMBER_OF_BLOCKS_AT_START).then((samples) => {
     for (const sample of samples) {
-      blockManager.initBlock(sample);
+      blockManager.createBlock(sample);
     }
 
     finishLoading();
@@ -88,7 +88,7 @@ btn.addEventListener('click', () => {
 
 // new block button
 document.getElementById('new-button').addEventListener('click', () => {
-  blockManager.initBlock();
+  blockManager.createBlock();
 });
 
 // test panel

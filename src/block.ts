@@ -1,4 +1,5 @@
 import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
+import BlockManager from './blockmanager';
 import * as Constants from './constants';
 import IBlockObject from './iblockobject';
 import AppWorker from './worker';
@@ -49,9 +50,9 @@ class Block implements IBlockObject {
 
   private _isWorking: boolean = true;
 
-  constructor(id: number, element: HTMLElement) {
+  constructor(id: number, blockmanager: BlockManager, findFreeSpace = false) {
     this._id = id;
-    this._element = element;
+    this._element = blockmanager.createBlockDom(this, findFreeSpace);
   }
 
   init() {
