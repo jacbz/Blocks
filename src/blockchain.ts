@@ -83,6 +83,7 @@ class BlockChain implements IBlockObject {
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.appendChild(block.element);
     this.render();
+    this.adjustZIndex();
   }
 
   addBlockAfter(block: Block, newBlock: Block) {
@@ -94,12 +95,14 @@ class BlockChain implements IBlockObject {
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.insertBefore(newBlock.element, block.element.nextSibling);
     this.render();
+    this.adjustZIndex();
   }
 
   removeBlock(block: Block) {
     this._blocks = this.blocks.filter((b) => b !== block);
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.removeChild(block.element);
+    this.adjustZIndex();
   }
 
   toggleMute() {
@@ -107,6 +110,12 @@ class BlockChain implements IBlockObject {
     for (const block of this._blocks) {
       block.muted = !block.muted;
       block.element.querySelector('.grid').classList.toggle('muted');
+    }
+  }
+
+  adjustZIndex() {
+    for (let i = 0; i < this.length; i += 1) {
+      this._blocks[i].element.style.zIndex = `${this.length - i}`;
     }
   }
 }

@@ -14,6 +14,8 @@ class BlockManager {
 
   private _hoveredCellElement: HTMLElement;
 
+  private _highestZIndex = 0;
+
   constructor(containerElement: HTMLDivElement, worker: Worker) {
     this._containerElement = containerElement;
     this._blockObjects = [];
@@ -162,22 +164,25 @@ class BlockManager {
   }
 
   // removes a block from a blockchain
-  releaseBlock(block: Block, isLastBlock = false) {
-    const containerRect = this._containerElement.getBoundingClientRect();
-    const blockRect = block.element.getBoundingClientRect();
+  releaseBlock(blockToRelease: Block) {
+    const blockchain = this.getBlockChainOfBlock(blockToRelease);
 
-    const blockchain = this.getBlockChainOfBlock(block);
-    if (blockchain.length === 2 && !isLastBlock) {
-      this.releaseBlock(blockchain.last, true);
+    // if there are only two blocks left, release both (but last one first to preserve pos)
+    const blocksToRelease =
+      blockchain.length === 2 ? [blockchain.last, blockchain.first] : [blockToRelease];
+    for (const block of blocksToRelease) {
+      const containerRect = this._containerElement.getBoundingClientRect();
+      const blockRect = block.element.getBoundingClientRect();
+
+      blockchain.removeBlock(block);
+      this._blockObjects.push(block);
+
+      // recalculate position
+      block.element.style.left = `${blockRect.x - containerRect.x}px`;
+      block.element.style.top = `${blockRect.y - containerRect.y}px`;
+
+      this._containerElement.appendChild(block.element);
     }
-    blockchain.removeBlock(block);
-    this._blockObjects.push(block);
-
-    // recalculate position
-    block.element.style.left = `${blockRect.x - containerRect.x}px`;
-    block.element.style.top = `${blockRect.y - containerRect.y}px`;
-
-    this._containerElement.appendChild(block.element);
 
     if (blockchain.length === 0) this.destroyBlockChain(blockchain);
   }
@@ -218,6 +223,11 @@ class BlockManager {
         start(event) {
           const { target } = event;
           target.setAttribute('drag', 'active');
+          // adjust zIndex if not inside blockchain
+          if (!target.matches('.blockchain .block')) {
+            blockManager._highestZIndex += 1;
+            target.style.zIndex = blockManager._highestZIndex;
+          }
         },
         move(event) {
           const { target } = event;
@@ -248,6 +258,11 @@ class BlockManager {
         })
       ],
       listeners: {
+        start(event) {
+          const { target } = event;
+          blockManager._highestZIndex += 1;
+          target.style.zIndex = blockManager._highestZIndex;
+        },
         move(event) {
           const { target } = event;
           const x = (parseFloat(target.style.left) || 0) + event.dx;
@@ -379,18 +394,17 @@ class BlockManager {
     const blockHeight = 130;
 
     const containerRect = this._containerElement.getBoundingClientRect();
-    return blocks
-      .some((b) => {
-        const blockRect = b.element.getBoundingClientRect();
-        const blockX = blockRect.x - containerRect.x;
-        const blockY = blockRect.y - containerRect.y;
-        return (
-          blockX + blockWidth >= x &&
-          blockX <= x + blockWidth &&
-          blockY + blockHeight >= y &&
-          blockY <= y + blockHeight
-        );
-      });
+    return blocks.some((b) => {
+      const blockRect = b.element.getBoundingClientRect();
+      const blockX = blockRect.x - containerRect.x;
+      const blockY = blockRect.y - containerRect.y;
+      return (
+        blockX + blockWidth >= x &&
+        blockX <= x + blockWidth &&
+        blockY + blockHeight >= y &&
+        blockY <= y + blockHeight
+      );
+    });
   }
 }
 

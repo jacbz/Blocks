@@ -75,6 +75,7 @@ header {
   display: inline-flex;
   padding: 6px;
   background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(3px);
   border-radius: 4px;
   position: absolute;
 
@@ -89,6 +90,7 @@ header {
       margin: 0;
       padding: $block-padding 0px $block-padding 0px;
       border-radius: 0;
+      backdrop-filter: unset;
 
       &:first-child {
         padding-left: $block-padding;
