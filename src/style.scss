@@ -99,7 +99,7 @@ $border-radius: 4px;
       left: 0;
       right: 0;
       bottom: calc(100% + 10px);
-      width: 52%;
+      width: 53%;
       margin-left: auto;
       margin-right: auto;
 
@@ -107,9 +107,29 @@ $border-radius: 4px;
         background: $block-chain-background;
         border-top-left-radius: $border-radius;
         border-top-right-radius: $border-radius;
+
+        .panel {
+          visibility: visible;
+          opacity: 1;
+        }
       }
 
-      #interpolate-button {
+      .panel {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0.2s, opacity 0.2s;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        justify-content: center;
+
+        .grid {          
+          pointer-events: none;
+        }
+      }
+
+      #bc-interpolate-button {
         transition: visibility 0.5s, opacity 0.5s;
         font-size: 80%;
         background: transparent;
@@ -307,7 +327,8 @@ button {
 }
 
 $muted-color: red;
-#mute-button {
+#mute-button,
+#bc-mute-button {
   @extend %fa-icon;
   @extend .fas;
   &:before {
@@ -339,7 +360,8 @@ $muted-color: red;
   }
 }
 
-#delete-button {
+#delete-button,
+#bc-delete-button {
   @extend %fa-icon;
   @extend .fas;
   margin-top: auto;

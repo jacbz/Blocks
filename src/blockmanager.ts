@@ -1,3 +1,4 @@
+import { INoteSequence } from '@magenta/music/es6/protobuf';
 import interact from 'interactjs';
 import Block from './block';
 import BlockChain from './blockchain';
@@ -30,7 +31,11 @@ class BlockManager {
         return [...arr, blockObject];
       }
       if (blockObject instanceof BlockChain) {
-        return [...arr, ...blockObject.blocks];
+        const { blocks } = blockObject;
+        if (blockObject.interpolatedBlock) {
+          blocks.push(blockObject.interpolatedBlock);
+        }
+        return [...arr, ...blocks];
       }
       return arr;
     }, []);
@@ -50,22 +55,27 @@ class BlockManager {
     return null;
   }
 
-  createBlock() {
-    const id = Math.max(...this.getAllBlocks().map((b) => b.id)) + 1;
-    const block = new Block(id);
-    this.initBlock(block);
+  nextId() {
+    const blocks = this.getAllBlocks();
+    return blocks.length > 0 ? Math.max(...blocks.map((b) => b.id)) + 1 : 0;
   }
 
-  initBlock(block: Block) {
+  initBlock(noteSequence?: INoteSequence) {
     // position
     const coords = this.findFreeSpaceInContainer();
 
-    this._blockObjects.push(block);
     const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
-    block.element = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector('.block');
-    block.element.style.left = `${coords[0]}px`;
-    block.element.style.top = `${coords[1]}px`;
-    this._containerElement.appendChild(block.element);
+    const blockElement = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector(
+      '.block'
+    ) as HTMLDivElement;
+    blockElement.style.left = `${coords[0]}px`;
+    blockElement.style.top = `${coords[1]}px`;
+
+    const block = new Block(this.nextId(), blockElement);
+    block.noteSequence = noteSequence || Block.defaultNoteSequence();
+    this._blockObjects.push(block);
+
+    this._containerElement.appendChild(blockElement);
 
     const grid = block.element.querySelector('.grid');
     grid.addEventListener(
@@ -120,22 +130,22 @@ class BlockManager {
     const index = this._blockObjects.indexOf(block);
     this._blockObjects[index] = blockchain;
 
-    const muteButton = blockChainElement.querySelector('#mute-button');
+    const muteButton = blockChainElement.querySelector('#bc-mute-button');
     muteButton.addEventListener('click', () => {
-      muteButton.classList.toggle('muted');
       blockchain.toggleMute();
     });
 
-    const deleteButton = blockChainElement.querySelector('#delete-button');
+    const deleteButton = blockChainElement.querySelector('#bc-delete-button');
     deleteButton.addEventListener('click', () => {
       this._blockObjects.splice(this._blockObjects.indexOf(blockchain), 1);
       blockChainElement.remove();
     });
 
-    const interpolateButton = blockChainElement.querySelector('#interpolate-button');
+    const interpolateButton = blockChainElement.querySelector('#bc-interpolate-button');
     interpolateButton.addEventListener('click', () => {
       const interpolateElement = blockChainElement.querySelector('#interpolate');
       interpolateElement.classList.add('open');
+      blockchain.interpolate(this);
     });
     return blockchain;
   }
@@ -195,10 +205,10 @@ class BlockManager {
 
   initInteractEvents() {
     const blockManager = this;
+    const ignoreFrom = '.grid, button, input';
     // make blocks draggable
     interact('.block').draggable({
-      // inertia: true,
-      ignoreFrom: '.grid, button',
+      ignoreFrom,
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: blockManager._containerElement,
@@ -235,8 +245,7 @@ class BlockManager {
     });
 
     interact('.blockchain').draggable({
-      // inertia: true,
-      ignoreFrom: '.grid, button',
+      ignoreFrom,
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: blockManager._containerElement,
@@ -353,7 +362,7 @@ class BlockManager {
   findFreeSpaceInContainer(): number[] {
     const blocks = this.getAllBlocks();
     if (blocks.every((b) => !b.element)) {
-      return [128, 128];
+      return [200, 200];
     }
     const containerWidth = this._containerElement.offsetWidth;
     const containerHeight = this._containerElement.offsetHeight;

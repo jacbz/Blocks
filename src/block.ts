@@ -10,16 +10,21 @@ class Block implements IBlockObject {
     return this._id;
   }
 
-  _noteSequence: INoteSequence;
+  private _noteSequence: INoteSequence;
+
+  get noteSequence() {
+    return this._noteSequence;
+  }
+
+  set noteSequence(noteSequence: INoteSequence) {
+    this._noteSequence = noteSequence;
+    this._isWorking = false;
+  }
 
   private _element: HTMLElement;
 
   get element() {
     return this._element;
-  }
-
-  set element(element: HTMLElement) {
-    this._element = element;
   }
 
   private _currentStep: number;
@@ -42,18 +47,19 @@ class Block implements IBlockObject {
     this._muted = muted;
   }
 
-  private _isWorking: boolean;
+  private _isWorking: boolean = true;
 
-  constructor(id: number, noteSequence?: INoteSequence) {
+  constructor(id: number, element: HTMLElement) {
     this._id = id;
-    const noteSeq = noteSequence || Block.defaultNoteSequence();
-    this._noteSequence = noteSeq;
+    this._element = element;
   }
 
   init() {
     this._element.setAttribute('id', this._id.toString());
 
     const gridElement = this._element.querySelector('.grid');
+    gridElement.querySelectorAll('.row').forEach((row) => row.remove());
+
     for (let row = 0; row < Constants.DRUM_PITCHES.length; row += 1) {
       const rowElement = document.createElement('div');
       rowElement.classList.add('row');
@@ -94,6 +100,9 @@ class Block implements IBlockObject {
     }
 
     // highlight active notes
+    if (!this._noteSequence) {
+      return;
+    }
     for (const note of this._noteSequence.notes) {
       for (let step = note.quantizedStartStep; step < note.quantizedEndStep; step += 1) {
         const rowIndex = Block.pitchToRowIndex(note.pitch);
@@ -183,8 +192,7 @@ class Block implements IBlockObject {
     this.render();
 
     AppWorker.generateSamples(1).then((samples) => {
-      [this._noteSequence] = samples;
-      this._isWorking = false;
+      [this.noteSequence] = samples;
       this.render();
     });
   }
@@ -193,9 +201,8 @@ class Block implements IBlockObject {
     this._isWorking = true;
     this.render();
 
-    AppWorker.getContinuedSequence(this._noteSequence).then((noteSequence) => {
-      this._noteSequence = noteSequence;
-      this._isWorking = false;
+    AppWorker.continueSequence(this._noteSequence).then((noteSequence) => {
+      this.noteSequence = noteSequence;
       this.render();
     });
   }

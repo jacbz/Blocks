@@ -1,6 +1,9 @@
+import { INoteSequence } from '@magenta/music/es6/protobuf';
 import Block from './block';
 import IBlockObject from './iblockobject';
 import * as Constants from './constants';
+import AppWorker from './worker';
+import BlockManager from './blockmanager';
 
 class BlockChain implements IBlockObject {
   private _blocks: Block[] = [];
@@ -47,13 +50,28 @@ class BlockChain implements IBlockObject {
     this._currentStep = currentStep
       ? currentStep % (this.blocks.length * Constants.TOTAL_STEPS)
       : currentStep;
-    for (let i = 0; i < this._blocks.length; i += 1) {
-      const block = this._blocks[i];
-      block.currentStep =
-        i === Math.floor(this._currentStep / Constants.TOTAL_STEPS)
-          ? this.currentStep % Constants.TOTAL_STEPS
-          : null;
+    if (this._interpolatedBlock) {
+      this._interpolatedBlock.currentStep = this.currentStep % Constants.TOTAL_STEPS;
+      this.blocks.forEach((b) => {
+        b.currentStep = null;
+      });
+    } else {
+      for (let i = 0; i < this._blocks.length; i += 1) {
+        const block = this._blocks[i];
+        block.currentStep =
+          i === Math.floor(this._currentStep / Constants.TOTAL_STEPS)
+            ? this.currentStep % Constants.TOTAL_STEPS
+            : null;
+      }
     }
+  }
+
+  private _interpolatedSamples: INoteSequence[];
+
+  private _interpolatedBlock: Block;
+
+  get interpolatedBlock() {
+    return this._interpolatedBlock;
   }
 
   constructor(element: HTMLElement) {
@@ -61,10 +79,16 @@ class BlockChain implements IBlockObject {
   }
 
   render() {
+    if (this.interpolatedBlock) {
+      this.interpolatedBlock.render();
+    }
     this._blocks.forEach((b) => b.render());
   }
 
   getPitchesToPlay(): number[] {
+    if (this._interpolatedBlock) {
+      return this._interpolatedBlock.getPitchesToPlay();
+    }
     if (this._muted) {
       return [];
     }
@@ -100,6 +124,7 @@ class BlockChain implements IBlockObject {
   }
 
   toggleMute() {
+    this.element.querySelector('#bc-mute-button').classList.toggle('muted');
     this._muted = !this.muted;
     for (const block of this._blocks) {
       block.muted = this._muted;
@@ -111,6 +136,32 @@ class BlockChain implements IBlockObject {
     for (let i = 0; i < this.length; i += 1) {
       this._blocks[i].element.style.zIndex = `${this.length - i}`;
     }
+  }
+
+  interpolate(blockmanager: BlockManager) {
+    if (!this.muted) {
+      this.toggleMute();
+    }
+    const slider = this._element.querySelector('#interpolate-slider') as HTMLInputElement;
+    slider.setAttribute('max', `${Constants.INTERPOLATION_LENGTH - 1}`);
+    slider.addEventListener('input', () => {
+      block.noteSequence = this._interpolatedSamples[slider.valueAsNumber];
+      block.render();
+    });
+    slider.valueAsNumber = Math.floor(Constants.INTERPOLATION_LENGTH / 2);
+
+    const blockElement = this._element.querySelector('#interpolate .block') as HTMLDivElement;
+    const block = new Block(blockmanager.nextId(), blockElement);
+    block.init();
+    this._interpolatedBlock = block;
+
+    AppWorker.generateInterpolatedSamples(this.first.noteSequence, this.last.noteSequence).then(
+      (interpolatedSamples) => {
+        this._interpolatedSamples = interpolatedSamples;
+        block.noteSequence = interpolatedSamples[Math.floor(interpolatedSamples.length / 2)];
+        block.render();
+      }
+    );
   }
 }
 

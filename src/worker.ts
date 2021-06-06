@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { MusicVAE } from '@magenta/music/es6/music_vae';
 import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import { INoteSequence } from '@magenta/music/es6/protobuf';
@@ -45,7 +44,7 @@ class AppWorker {
     });
   }
 
-  static getContinuedSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
+  static continueSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
     return new Promise((resolve) => {
       AppWorker.instance.postMessage({
         sequenceToContinue: noteSequence
@@ -53,6 +52,21 @@ class AppWorker {
 
       AppWorker.instance.onmessage = ({ data }) => {
         resolve(data.continuedSequence);
+      };
+    });
+  }
+
+  static generateInterpolatedSamples(
+    noteSequence1: INoteSequence,
+    noteSequence2: INoteSequence
+  ): Promise<INoteSequence[]> {
+    return new Promise((resolve) => {
+      AppWorker.instance.postMessage({
+        sequencesToInterpolate: [noteSequence1, noteSequence2]
+      });
+
+      AppWorker.instance.onmessage = ({ data }) => {
+        resolve(data.interpolatedSequences);
       };
     });
   }
@@ -79,6 +93,14 @@ context.onmessage = async ({ data }) => {
       Constants.TEMPERATURE
     );
     context.postMessage({ continuedSequence });
+  }
+
+  if (data.sequencesToInterpolate) {
+    const interpolatedSequences = await drumsVae.interpolate(
+      data.sequencesToInterpolate,
+      Constants.INTERPOLATION_LENGTH
+    );
+    context.postMessage({ interpolatedSequences });
   }
 };
 

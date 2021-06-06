@@ -1,5 +1,4 @@
 import * as Tone from 'tone';
-import Block from './block';
 import * as Constants from './constants';
 import DrumKit from './drumkit';
 import AppWorker from './worker';
@@ -26,9 +25,8 @@ function init() {
 
 function initStartingBlocks() {
   AppWorker.generateSamples(Constants.NUMBER_OF_BLOCKS_AT_START).then((samples) => {
-    for (let i = 0; i < Constants.NUMBER_OF_BLOCKS_AT_START; i += 1) {
-      const block = new Block(i, samples[i]);
-      blockManager.initBlock(block);
+    for (const sample of samples) {
+      blockManager.initBlock(sample);
     }
 
     finishLoading();
@@ -90,7 +88,7 @@ btn.addEventListener('click', () => {
 
 // new block button
 document.getElementById('new-button').addEventListener('click', () => {
-  blockManager.createBlock();
+  blockManager.initBlock();
 });
 
 // test panel
