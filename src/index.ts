@@ -62,14 +62,14 @@ function play() {
       b.getPitchesToPlay().forEach((p) => {
         pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1);
       });
-      b.updateGrid();
+      b.render();
     });
 
     for (const [pitch, count] of pitchToCountMap) {
       drumkit.playNote(pitch, time, count);
     }
 
-    currentStep = (currentStep + 1) % Constants.TOTAL_STEPS;
+    currentStep += 1;
   }, smallestDivision);
 
   Tone.Transport.start();
@@ -81,7 +81,7 @@ function stop() {
   currentStep = undefined;
   blockManager.do((b) => {
     b.currentStep = undefined;
-    b.updateGrid();
+    b.render();
   });
 }
 

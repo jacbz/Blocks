@@ -66,6 +66,51 @@ header {
   }
 }
 
+.blockchain {
+  display: inline-flex;
+  padding: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  position: absolute;
+
+  .blocks {
+    margin: 4px;
+
+    $block-padding: 8px;
+    $border-radius: 4px;
+    .block {
+      position: relative;
+      margin: 0;
+      padding: $block-padding 0px $block-padding 0px;
+      border-radius: 0;
+
+      &:first-child {
+        padding-left: $block-padding;
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+      }
+  
+      &:last-child {
+        padding-right: $block-padding;
+        border-top-right-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+      }
+  
+      .grid {
+        margin: 0;
+      }
+  
+      .block-actions {
+        display: none;
+      }
+    }
+  }
+
+  .block-actions {
+    padding: 2px 0px 2px 2px;
+  }
+}
+
 .block {
   display: inline-flex;
   background-color: rgba(0, 0, 0, .35);
@@ -74,12 +119,12 @@ header {
   margin: 16px;
   border-radius: 4px;
   position: absolute;
+}
 
-  .block-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+.block-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 $cell-spacing: 1.6px;

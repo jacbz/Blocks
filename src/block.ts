@@ -1,15 +1,16 @@
 import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
 import * as Constants from './constants';
+import IBlockObject from './iblockobject';
 import WorkerData from './worker';
 
-class Block {
+class Block implements IBlockObject {
   private _id: number;
 
   get id() {
     return this._id;
   }
 
-  private _noteSequence: INoteSequence;
+  _noteSequence: INoteSequence;
 
   private _element: HTMLElement;
 
@@ -28,7 +29,7 @@ class Block {
   }
 
   set currentStep(currentStep: number) {
-    this._currentStep = currentStep;
+    this._currentStep = currentStep ? currentStep % Constants.TOTAL_STEPS : currentStep;
   }
 
   private _muted: boolean;
@@ -41,16 +42,7 @@ class Block {
     this._noteSequence = noteSeq;
   }
 
-  static defaultNoteSequence(): INoteSequence {
-    return new NoteSequence({
-      quantizationInfo: {
-        stepsPerQuarter: Constants.STEPS_PER_QUARTER
-      },
-      totalQuantizedSteps: Constants.TOTAL_STEPS
-    });
-  }
-
-  initGrid() {
+  init() {
     const gridElement = this._element.querySelector('.grid');
     for (let row = 0; row < Constants.DRUM_PITCHES.length; row += 1) {
       const rowElement = document.createElement('div');
@@ -73,10 +65,10 @@ class Block {
         rowElement.appendChild(cellElement);
       }
     }
-    this.updateGrid();
+    this.render();
   }
 
-  updateGrid() {
+  render() {
     const gridElement = this._element.querySelector('.grid');
 
     // reset class names
@@ -119,6 +111,15 @@ class Block {
     );
   }
 
+  static defaultNoteSequence(): INoteSequence {
+    return new NoteSequence({
+      quantizationInfo: {
+        stepsPerQuarter: Constants.STEPS_PER_QUARTER
+      },
+      totalQuantizedSteps: Constants.TOTAL_STEPS
+    });
+  }
+
   toggleNote(cellElement: HTMLElement) {
     const pitch = Block.rowIndexToPitch(parseInt(cellElement.getAttribute('row'), 10));
     const step = parseInt(cellElement.getAttribute('col'), 10);
@@ -128,7 +129,7 @@ class Block {
     } else {
       this.addNote(pitch, step);
     }
-    this.updateGrid();
+    this.render();
   }
 
   addNote(pitch: number, step: number) {
@@ -169,7 +170,7 @@ class Block {
 
   doMagic(worker: Worker) {
     this._isWorking = true;
-    this.updateGrid();
+    this.render();
 
     worker.postMessage(
       new WorkerData({
@@ -180,24 +181,7 @@ class Block {
     worker.onmessage = ({ data }: { data: WorkerData }) => {
       [this._noteSequence] = data.samples;
       this._isWorking = false;
-      this.updateGrid();
-    };
-  }
-
-  continue(worker: Worker) {
-    this._isWorking = true;
-    this.updateGrid();
-
-    worker.postMessage(
-      new WorkerData({
-        sequenceToContinue: this._noteSequence
-      })
-    );
-
-    worker.onmessage = ({ data }: { data: WorkerData }) => {
-      this._noteSequence = data.continuedSequence;
-      this._isWorking = false;
-      this.updateGrid();
+      this.render();
     };
   }
 }
