@@ -102,7 +102,7 @@ btn.addEventListener('click', () => {
 
 // new block button
 document.getElementById('new-button').addEventListener('click', () => {
-  blockManager.addBlock();
+  blockManager.createBlock();
 });
 
 // test panel

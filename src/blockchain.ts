@@ -13,6 +13,10 @@ class BlockChain implements IBlockObject {
     return this._blocks.length;
   }
 
+  get first() {
+    return this._blocks[0];
+  }
+
   private _element: HTMLElement;
 
   get element() {

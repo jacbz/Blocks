@@ -50,7 +50,7 @@ class BlockManager {
     return null;
   }
 
-  addBlock() {
+  createBlock() {
     const id =
       this._blocks.reduce((highestId, blockObject) => {
         if (blockObject instanceof Block) {
@@ -149,16 +149,38 @@ class BlockManager {
     if (blockChain2 && blockChain1 !== blockChain2) {
       blockChain2.removeBlock(block2);
       if (blockChain2.length < 2) {
-        this.destroyBlockChain(blockChain2);
+        this.releaseBlock(blockChain2.first);
       }
     } else {
       this._blocks = this._blocks.filter((b) => b !== block2);
     }
   }
 
+  // removes a block from a blockchain
+  releaseBlock(block: Block) {
+    const containerRect = this._containerElement.getBoundingClientRect();
+    const blockRect = block.element.getBoundingClientRect();
+
+    const blockchain = this.getBlockChainOfBlock(block);
+    blockchain.removeBlock(block);
+    this._blocks.push(block);
+
+    // recalculate position
+    block.element.style.left = `${blockRect.x - containerRect.x}px`;
+    block.element.style.top = `${blockRect.y - containerRect.y}px`;
+
+    this._containerElement.appendChild(block.element);
+
+    if (blockchain.length < 2) this.destroyBlockChain(blockchain);
+  }
+
   // remove blockchain if only one element is remaining
   destroyBlockChain(blockchain: BlockChain) {
-
+    if (blockchain.length === 1) {
+      this.releaseBlock(blockchain.first);
+    }
+    this._blocks = this._blocks.filter((b) => b !== blockchain);
+    blockchain.element.remove();
   }
 
   getContinuedSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
@@ -253,6 +275,39 @@ class BlockManager {
       },
       ondropdeactivate() {
         blockManager._containerElement.removeAttribute('dropzones');
+      }
+    });
+
+    interact('#container').dropzone({
+      accept: '.blockchain .block',
+      overlap: 'pointer',
+      checker: (
+        dragEvent,
+        event,
+        dropped,
+        dropzone,
+        dropzoneElement,
+        draggable,
+        draggableElement
+      ) => {
+        const blockchainRect = draggableElement.closest('.blockchain').getBoundingClientRect();
+        const mouseIsInsideBlockchain =
+          event.clientX >= blockchainRect.left &&
+          event.clientX <= blockchainRect.right &&
+          event.clientY >= blockchainRect.top &&
+          event.clientY <= blockchainRect.bottom;
+        return dropped && !mouseIsInsideBlockchain;
+      },
+      ondropactivate() {
+        blockManager._containerElement.classList.add('droppable');
+      },
+      ondrop(event) {
+        const blockElement = event.relatedTarget;
+        const block = blockManager.getBlockById(parseInt(blockElement.id, 10));
+        blockManager.releaseBlock(block);
+      },
+      ondropdeactivate() {
+        blockManager._containerElement.classList.remove('droppable');
       }
     });
 

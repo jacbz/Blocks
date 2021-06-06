@@ -63,6 +63,11 @@ header {
     flex: 1;
     overflow: hidden;
     position: relative;
+    transition: background 0.2s;
+
+    &.droppable {
+      background: rgba(0, 0, 0, 0.15);
+    }
   }
 }
 
@@ -116,7 +121,6 @@ header {
   background-color: rgba(0, 0, 0, .35);
   backdrop-filter: blur(3px);
   padding: 6px;
-  margin: 16px;
   border-radius: 4px;
   position: absolute;
 }
