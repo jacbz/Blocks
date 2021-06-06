@@ -75,7 +75,7 @@ class BlockChain implements IBlockObject {
   addBlock(block: Block) {
     this.blocks.push(block);
     const blocksElement = this.element.querySelector('.blocks');
-    blocksElement.insertBefore(block.element, blocksElement.querySelector('#interpolate-button'));
+    blocksElement.insertBefore(block.element, blocksElement.querySelector('#interpolate'));
     this.render();
     this.adjustZIndex();
   }

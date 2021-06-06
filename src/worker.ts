@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { MusicVAE } from '@magenta/music/es6/music_vae';
 import { MusicRNN } from '@magenta/music/es6/music_rnn';
 import { INoteSequence } from '@magenta/music/es6/protobuf';
@@ -13,49 +14,72 @@ const drumsRnn = new MusicRNN(
   'https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn'
 );
 
-class WorkerData {
-  // Inputs
-  startLoading: boolean;
+class AppWorker {
+  static instance: Worker;
 
-  numberOfSamples: number;
+  static init(worker: Worker) {
+    AppWorker.instance = worker;
+  }
 
-  sequenceToContinue: INoteSequence;
+  static load(): Promise<boolean> {
+    return new Promise((resolve) => {
+      AppWorker.instance.postMessage({
+        startLoading: true
+      });
 
-  // Outputs
-  finishedLoading: boolean;
+      AppWorker.instance.onmessage = ({ data }) => {
+        resolve(data.finishedLoading);
+      };
+    });
+  }
 
-  samples: INoteSequence[];
+  static generateSamples(numberOfSamples: number): Promise<INoteSequence[]> {
+    return new Promise((resolve) => {
+      AppWorker.instance.postMessage({
+        numberOfSamples
+      });
 
-  continuedSequence: INoteSequence;
+      AppWorker.instance.onmessage = ({ data }) => {
+        resolve(data.samples);
+      };
+    });
+  }
 
-  public constructor(init?: Partial<WorkerData>) {
-    Object.assign(this, init);
+  static getContinuedSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
+    return new Promise((resolve) => {
+      AppWorker.instance.postMessage({
+        sequenceToContinue: noteSequence
+      });
+
+      AppWorker.instance.onmessage = ({ data }) => {
+        resolve(data.continuedSequence);
+      };
+    });
   }
 }
 
-// Respond to message from parent thread
-context.addEventListener('message', ({ data }: { data: WorkerData }) => {
+context.onmessage = async ({ data }) => {
   if (data.startLoading) {
-    Promise.all([drumsVae.initialize(), drumsRnn.initialize()]).then(() => {
-      context.postMessage(new WorkerData({ finishedLoading: true }));
-    });
+    await drumsVae.initialize();
+    await drumsRnn.initialize();
+    context.postMessage({ finishedLoading: true });
     return;
   }
 
   if (data.numberOfSamples) {
-    drumsVae.sample(data.numberOfSamples, Constants.TEMPERATURE).then((samples) => {
-      context.postMessage(new WorkerData({ samples }));
-    });
+    const samples = await drumsVae.sample(data.numberOfSamples, Constants.TEMPERATURE);
+    context.postMessage({ samples });
     return;
   }
 
   if (data.sequenceToContinue) {
-    drumsRnn
-      .continueSequence(data.sequenceToContinue, Constants.TOTAL_STEPS, Constants.TEMPERATURE)
-      .then((continuedSequence) => {
-        context.postMessage(new WorkerData({ continuedSequence }));
-      });
+    const continuedSequence = await drumsRnn.continueSequence(
+      data.sequenceToContinue,
+      Constants.TOTAL_STEPS,
+      Constants.TEMPERATURE
+    );
+    context.postMessage({ continuedSequence });
   }
-});
+};
 
-export default WorkerData;
+export default AppWorker;

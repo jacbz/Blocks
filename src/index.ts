@@ -2,48 +2,37 @@ import * as Tone from 'tone';
 import Block from './block';
 import * as Constants from './constants';
 import DrumKit from './drumkit';
-import WorkerData from './worker';
+import AppWorker from './worker';
 import BlockManager from './blockmanager';
 
 const containerElement = document.getElementById('container') as HTMLDivElement;
 const volumeSlider = document.getElementById('volume') as HTMLInputElement;
 const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url));
-const blockManager = new BlockManager(containerElement, worker);
+AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
+const blockManager = new BlockManager(containerElement);
 const drumkit = DrumKit.getInstance();
 let isPlaying = false;
 let currentStep: number;
 
 init();
 function init() {
-  worker.postMessage(
-    new WorkerData({
-      startLoading: true
-    })
-  );
-  worker.onmessage = ({ data }: { data: WorkerData }) => {
-    if (data.finishedLoading) {
+  AppWorker.load().then((finishedLoading) => {
+    if (finishedLoading) {
       initStartingBlocks();
     }
-  };
+  });
 }
 
 function initStartingBlocks() {
-  worker.postMessage(
-    new WorkerData({
-      numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
-    })
-  );
-
-  worker.onmessage = ({ data }: { data: WorkerData }) => {
+  AppWorker.generateSamples(Constants.NUMBER_OF_BLOCKS_AT_START).then((samples) => {
     for (let i = 0; i < Constants.NUMBER_OF_BLOCKS_AT_START; i += 1) {
-      const block = new Block(i, data.samples[i]);
+      const block = new Block(i, samples[i]);
       blockManager.initBlock(block);
     }
 
     finishLoading();
-  };
+  });
 }
 
 function finishLoading() {

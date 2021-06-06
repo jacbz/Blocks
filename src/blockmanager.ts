@@ -1,25 +1,20 @@
-import { INoteSequence } from '@magenta/music/es6/protobuf';
 import interact from 'interactjs';
 import Block from './block';
 import BlockChain from './blockchain';
 import IBlockObject from './iblockobject';
-import WorkerData from './worker';
 
 class BlockManager {
   private _containerElement: HTMLDivElement;
 
   private _blockObjects: IBlockObject[];
 
-  private _worker: Worker;
-
   private _hoveredCellElement: HTMLElement;
 
   private _highestZIndex = 0;
 
-  constructor(containerElement: HTMLDivElement, worker: Worker) {
+  constructor(containerElement: HTMLDivElement) {
     this._containerElement = containerElement;
     this._blockObjects = [];
-    this._worker = worker;
 
     this.initInteractEvents();
   }
@@ -89,12 +84,12 @@ class BlockManager {
 
     const magicButton = block.element.querySelector('#magic-button');
     magicButton.addEventListener('click', () => {
-      block.doMagic(this._worker);
+      block.doMagic();
     });
 
     const continueButton = block.element.querySelector('#continue-button');
     continueButton.addEventListener('click', () => {
-      block.continue(this._worker);
+      block.continue();
     });
 
     const deleteButton = block.element.querySelector('#delete-button');
@@ -135,6 +130,12 @@ class BlockManager {
     deleteButton.addEventListener('click', () => {
       this._blockObjects.splice(this._blockObjects.indexOf(blockchain), 1);
       blockChainElement.remove();
+    });
+
+    const interpolateButton = blockChainElement.querySelector('#interpolate-button');
+    interpolateButton.addEventListener('click', () => {
+      const interpolateElement = blockChainElement.querySelector('#interpolate');
+      interpolateElement.classList.add('open');
     });
     return blockchain;
   }
@@ -190,20 +191,6 @@ class BlockManager {
   destroyBlockChain(blockchain: BlockChain) {
     this._blockObjects = this._blockObjects.filter((b) => b !== blockchain);
     blockchain.element.remove();
-  }
-
-  getContinuedSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
-    return new Promise((resolve) => {
-      this._worker.postMessage(
-        new WorkerData({
-          sequenceToContinue: noteSequence
-        })
-      );
-
-      this._worker.onmessage = ({ data }: { data: WorkerData }) => {
-        resolve(data.continuedSequence);
-      };
-    });
   }
 
   initInteractEvents() {

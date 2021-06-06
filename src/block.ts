@@ -1,7 +1,7 @@
 import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
 import * as Constants from './constants';
 import IBlockObject from './iblockobject';
-import WorkerData from './worker';
+import AppWorker from './worker';
 
 class Block implements IBlockObject {
   private _id: number;
@@ -178,38 +178,26 @@ class Block implements IBlockObject {
     this.element.querySelector('.grid').classList.toggle('muted');
   }
 
-  doMagic(worker: Worker) {
+  doMagic() {
     this._isWorking = true;
     this.render();
 
-    worker.postMessage(
-      new WorkerData({
-        numberOfSamples: Constants.NUMBER_OF_BLOCKS_AT_START
-      })
-    );
-
-    worker.onmessage = ({ data }: { data: WorkerData }) => {
-      [this._noteSequence] = data.samples;
+    AppWorker.generateSamples(1).then((samples) => {
+      [this._noteSequence] = samples;
       this._isWorking = false;
       this.render();
-    };
+    });
   }
 
-  continue(worker: Worker) {
+  continue() {
     this._isWorking = true;
     this.render();
 
-    worker.postMessage(
-      new WorkerData({
-        sequenceToContinue: this._noteSequence
-      })
-    );
-
-    worker.onmessage = ({ data }: { data: WorkerData }) => {
-      this._noteSequence = data.continuedSequence;
+    AppWorker.getContinuedSequence(this._noteSequence).then((noteSequence) => {
+      this._noteSequence = noteSequence;
       this._isWorking = false;
       this.render();
-    };
+    });
   }
 }
 

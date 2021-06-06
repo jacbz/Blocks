@@ -72,6 +72,8 @@ header {
 }
 
 $block-chain-background: rgba(255, 255, 255, 0.2);
+$block-padding: 8px;
+$border-radius: 4px;
 .blockchain {
   display: inline-flex;
   padding: 6px;
@@ -85,27 +87,38 @@ $block-chain-background: rgba(255, 255, 255, 0.2);
     display: flex;
     position: relative;   
 
-    #interpolate-button {
+    #interpolate {
+      // only visible if there are two blocks
       &:nth-child(3) {
         visibility: visible;
         opacity: 1;
       }
       opacity: 0;
       visibility: hidden;
-      transition: visibility 0.5s, opacity 0.5s;
       position: absolute;
-      height: 26px;
-      top: -26px;
       left: 0;
       right: 0;
+      bottom: calc(100% + 10px);
+      width: 52%;
       margin-left: auto;
       margin-right: auto;
-      font-size: 80%;
-      background: $block-chain-background;
+
+      &.open {
+        background: $block-chain-background;
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+      }
+
+      #interpolate-button {
+        transition: visibility 0.5s, opacity 0.5s;
+        font-size: 80%;
+        background: transparent;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: -10px;
+      }
     }
 
-    $block-padding: 8px;
-    $border-radius: 4px;
     .block {
       position: relative;
       margin: 0;
