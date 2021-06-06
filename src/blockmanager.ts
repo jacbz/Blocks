@@ -121,8 +121,8 @@ class BlockManager {
     const blockChainElement = (
       blockChainTemplate.content.cloneNode(true) as HTMLElement
     ).querySelector('.blockchain') as HTMLElement;
-    blockChainElement.style.left = block.element.style.left;
-    blockChainElement.style.top = block.element.style.top;
+    blockChainElement.style.left = `${parseFloat(block.element.style.left) - 10}px`;
+    blockChainElement.style.top = `${parseFloat(block.element.style.top) - 10}px`;
     block.element.style.left = null;
     block.element.style.top = null;
     this._containerElement.appendChild(blockChainElement);

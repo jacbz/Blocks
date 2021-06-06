@@ -160,8 +160,10 @@ class BlockChain implements IBlockObject {
     const slider = this._element.querySelector('#interpolate-slider') as HTMLInputElement;
     slider.setAttribute('max', `${Constants.INTERPOLATION_LENGTH - 1}`);
     slider.addEventListener('input', () => {
-      block.noteSequence = this._interpolatedSamples[slider.valueAsNumber];
-      block.render();
+      if (this._interpolatedSamples) {
+        block.noteSequence = this._interpolatedSamples[slider.valueAsNumber];
+        block.render();
+      }
     });
     slider.valueAsNumber = Math.floor(Constants.INTERPOLATION_LENGTH / 2);
 

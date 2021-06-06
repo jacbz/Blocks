@@ -85,7 +85,7 @@ $border-radius: 4px;
   .blocks {
     margin: 4px;
     display: flex;
-    position: relative;   
+    position: relative;
 
     #interpolate {
       // only visible if there are two blocks
@@ -121,15 +121,16 @@ $border-radius: 4px;
         padding: 8px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 10px;
         justify-content: center;
+        margin-bottom: 4px;
 
         .dropzone {
           visibility: hidden;
           opacity: 0;
         }
 
-        .grid {          
+        .grid {
           pointer-events: none;
         }
       }
@@ -156,17 +157,17 @@ $border-radius: 4px;
         border-top-left-radius: $border-radius;
         border-bottom-left-radius: $border-radius;
       }
-  
+
       &:last-of-type {
         padding-right: $block-padding;
         border-top-right-radius: $border-radius;
         border-bottom-right-radius: $border-radius;
       }
-  
+
       .grid {
         margin: 0;
       }
-  
+
       .block-actions {
         display: none;
       }
@@ -180,7 +181,7 @@ $border-radius: 4px;
 
 .block {
   display: inline-flex;
-  background-color: rgba(0, 0, 0, .35);
+  background-color: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(3px);
   padding: 6px;
   border-radius: 4px;
@@ -196,8 +197,8 @@ $border-radius: 4px;
 $dropzone-width: 50px;
 $dropzone-padding: 4px;
 $dropzone-border: 4px;
-#container[dropzones="visible"] {
-  .block[drag="active"] .dropzone {
+#container[dropzones='visible'] {
+  .block[drag='active'] .dropzone {
     visibility: hidden;
     opacity: 0;
   }
@@ -209,18 +210,18 @@ $dropzone-border: 4px;
 .dropzone {
   visibility: hidden;
   opacity: 0;
-  transition:visibility 0.2s, opacity 0.2s, background 0.2s;
+  transition: visibility 0.2s, opacity 0.2s, background 0.2s;
   position: absolute;
   width: $dropzone-width;
-  right: -($dropzone-width + 2*$dropzone-padding + 2*$dropzone-border);
+  right: -($dropzone-width + 2 * $dropzone-padding + 2 * $dropzone-border);
   top: 0;
   bottom: 0;
   border: dashed $dropzone-border #aaa;
   border-radius: $dropzone-border;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   padding: $dropzone-padding;
-  display:flex;
-  flex-direction:row;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
 
@@ -393,5 +394,47 @@ footer {
 
   span {
     color: lightgray;
+  }
+}
+
+
+input[type='range'] {
+  -webkit-appearance: none;
+  background: transparent;
+
+  &:focus {
+    outline: none;
+  }
+  
+  @mixin slider-track {
+    width: 100%;
+    height: 10px;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 5px;
+  }
+
+  @mixin slider-thumb {
+    border: 8px solid #fff;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    cursor: pointer;
+    margin-top: -5px;
+  }
+  
+  &::-webkit-slider-runnable-track {
+    @include slider-track;
+  }
+  &::-moz-range-track {
+    @include slider-track;
+  }
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    @include slider-thumb;
+  }
+  &::-moz-range-thumb {
+    @include slider-thumb;
   }
 }
