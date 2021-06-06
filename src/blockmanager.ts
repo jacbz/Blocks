@@ -120,7 +120,8 @@ class BlockManager {
     this._containerElement.appendChild(blockChainElement);
     this._containerElement.removeChild(block.element);
 
-    const blockchain = new BlockChain(block, blockChainElement);
+    const blockchain = new BlockChain(blockChainElement);
+    blockchain.addBlock(block);
     const index = this._blockObjects.indexOf(block);
     this._blockObjects[index] = blockchain;
 
@@ -135,8 +136,6 @@ class BlockManager {
       this._blockObjects.splice(this._blockObjects.indexOf(blockchain), 1);
       blockChainElement.remove();
     });
-
-    blockchain.init();
     return blockchain;
   }
 
@@ -367,7 +366,7 @@ class BlockManager {
   findFreeSpaceInContainer(): number[] {
     const blocks = this.getAllBlocks();
     if (blocks.every((b) => !b.element)) {
-      return [16, 16];
+      return [128, 128];
     }
     const containerWidth = this._containerElement.offsetWidth;
     const containerHeight = this._containerElement.offsetHeight;

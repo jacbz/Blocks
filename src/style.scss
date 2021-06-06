@@ -71,10 +71,11 @@ header {
   }
 }
 
+$block-chain-background: rgba(255, 255, 255, 0.2);
 .blockchain {
   display: inline-flex;
   padding: 6px;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: $block-chain-background;
   backdrop-filter: blur(3px);
   border-radius: 4px;
   position: absolute;
@@ -82,6 +83,26 @@ header {
   .blocks {
     margin: 4px;
     display: flex;
+    position: relative;   
+
+    #interpolate-button {
+      &:nth-child(3) {
+        visibility: visible;
+        opacity: 1;
+      }
+      opacity: 0;
+      visibility: hidden;
+      transition: visibility 0.5s, opacity 0.5s;
+      position: absolute;
+      height: 26px;
+      top: -26px;
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 80%;
+      background: $block-chain-background;
+    }
 
     $block-padding: 8px;
     $border-radius: 4px;
@@ -92,13 +113,13 @@ header {
       border-radius: 0;
       backdrop-filter: unset;
 
-      &:first-child {
+      &:first-of-type {
         padding-left: $block-padding;
         border-top-left-radius: $border-radius;
         border-bottom-left-radius: $border-radius;
       }
   
-      &:last-child {
+      &:last-of-type {
         padding-right: $block-padding;
         border-top-right-radius: $border-radius;
         border-bottom-right-radius: $border-radius;

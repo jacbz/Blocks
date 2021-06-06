@@ -3,7 +3,7 @@ import IBlockObject from './iblockobject';
 import * as Constants from './constants';
 
 class BlockChain implements IBlockObject {
-  private _blocks: Block[];
+  private _blocks: Block[] = [];
 
   get blocks() {
     return this._blocks;
@@ -56,14 +56,8 @@ class BlockChain implements IBlockObject {
     }
   }
 
-  constructor(startingBlock: Block, element: HTMLElement) {
-    this._blocks = [startingBlock];
+  constructor(element: HTMLElement) {
     this._element = element;
-  }
-
-  init() {
-    const blocksElement = this.element.querySelector('.blocks');
-    this._blocks.forEach((b) => blocksElement.appendChild(b.element));
   }
 
   render() {
@@ -81,7 +75,7 @@ class BlockChain implements IBlockObject {
   addBlock(block: Block) {
     this.blocks.push(block);
     const blocksElement = this.element.querySelector('.blocks');
-    blocksElement.appendChild(block.element);
+    blocksElement.insertBefore(block.element, blocksElement.querySelector('#interpolate-button'));
     this.render();
     this.adjustZIndex();
   }
@@ -108,8 +102,8 @@ class BlockChain implements IBlockObject {
   toggleMute() {
     this._muted = !this.muted;
     for (const block of this._blocks) {
-      block.muted = !block.muted;
-      block.element.querySelector('.grid').classList.toggle('muted');
+      block.muted = this._muted;
+      block.element.querySelector('.grid').classList.toggle('muted', this._muted);
     }
   }
 
