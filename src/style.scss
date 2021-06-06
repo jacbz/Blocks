@@ -127,6 +127,43 @@ header {
   gap: 4px;
 }
 
+$dropzone-width: 50px;
+$dropzone-padding: 4px;
+$dropzone-border: 4px;
+#container[dropzones="visible"] {
+  .block[drag="active"] .dropzone {
+    visibility: hidden;
+    opacity: 0;
+  }
+  .dropzone {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+.dropzone {
+  visibility: hidden;
+  opacity: 0;
+  transition:visibility 0.2s, opacity 0.2s, background 0.2s;
+  position: absolute;
+  width: $dropzone-width;
+  right: -($dropzone-width + 2*$dropzone-padding + 2*$dropzone-border);
+  top: 0;
+  bottom: 0;
+  border: dashed $dropzone-border #aaa;
+  border-radius: $dropzone-border;
+  background: rgba(0,0,0,0.4);
+  padding: $dropzone-padding;
+  display:flex;
+  flex-direction:row;
+  align-items: center;
+  justify-content: center;
+
+  &.active {
+    background: rgba(46, 204, 113, 0.9);
+    transition: background 0.2s;
+  }
+}
+
 $cell-spacing: 1.6px;
 .grid {
   width: 320px;

@@ -43,6 +43,8 @@ class Block implements IBlockObject {
   }
 
   init() {
+    this._element.setAttribute('id', this._id.toString());
+
     const gridElement = this._element.querySelector('.grid');
     for (let row = 0; row < Constants.DRUM_PITCHES.length; row += 1) {
       const rowElement = document.createElement('div');
@@ -180,6 +182,23 @@ class Block implements IBlockObject {
 
     worker.onmessage = ({ data }: { data: WorkerData }) => {
       [this._noteSequence] = data.samples;
+      this._isWorking = false;
+      this.render();
+    };
+  }
+
+  continue(worker: Worker) {
+    this._isWorking = true;
+    this.render();
+
+    worker.postMessage(
+      new WorkerData({
+        sequenceToContinue: this._noteSequence
+      })
+    );
+
+    worker.onmessage = ({ data }: { data: WorkerData }) => {
+      this._noteSequence = data.continuedSequence;
       this._isWorking = false;
       this.render();
     };

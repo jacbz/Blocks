@@ -9,6 +9,10 @@ class BlockChain implements IBlockObject {
     return this._blocks;
   }
 
+  get length() {
+    return this._blocks.length;
+  }
+
   private _element: HTMLElement;
 
   get element() {
@@ -58,6 +62,23 @@ class BlockChain implements IBlockObject {
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.appendChild(block.element);
     this.render();
+  }
+
+  addBlockAfter(block: Block, newBlock: Block) {
+    this._blocks = this.blocks.filter((b) => b !== newBlock);
+
+    // insert after
+    this._blocks.splice(this.blocks.indexOf(block) + 1, 0, newBlock);
+
+    const blocksElement = this.element.querySelector('.blocks');
+    blocksElement.insertBefore(newBlock.element, block.element.nextSibling);
+    this.render();
+  }
+
+  removeBlock(block: Block) {
+    this._blocks = this.blocks.filter((b) => b !== block);
+    const blocksElement = this.element.querySelector('.blocks');
+    blocksElement.removeChild(block.element);
   }
 }
 

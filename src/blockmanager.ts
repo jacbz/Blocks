@@ -40,6 +40,16 @@ class BlockManager {
     return null;
   }
 
+  // return null if block is not in any blockchain
+  getBlockChainOfBlock(block: Block): BlockChain {
+    for (const blockChain of this._blocks.filter((b) => b instanceof BlockChain)) {
+      if ((blockChain as BlockChain).blocks.find((b) => b === block)) {
+        return blockChain as BlockChain;
+      }
+    }
+    return null;
+  }
+
   addBlock() {
     const id =
       this._blocks.reduce((highestId, blockObject) => {
@@ -89,13 +99,7 @@ class BlockManager {
 
     const continueButton = block.element.querySelector('#continue-button');
     continueButton.addEventListener('click', () => {
-      this.getContinuedSequence(block._noteSequence).then((noteSequence) => {
-        const blockchain = this.initBlockChain(block);
-        const newBlock = new Block(2, noteSequence);
-        this.initBlock(newBlock);
-        this._blocks.splice(this._blocks.indexOf(newBlock), 1);
-        blockchain.addBlock(newBlock);
-      });
+      block.continue(this._worker);
     });
 
     const deleteButton = block.element.querySelector('#delete-button');
@@ -108,8 +112,12 @@ class BlockManager {
   }
 
   initBlockChain(block: Block): BlockChain {
-    const blockChainTemplate = document.getElementById('blockchain-template') as HTMLTemplateElement;
-    const blockChainElement = (blockChainTemplate.content.cloneNode(true) as HTMLElement).querySelector('.blockchain') as HTMLElement;
+    const blockChainTemplate = document.getElementById(
+      'blockchain-template'
+    ) as HTMLTemplateElement;
+    const blockChainElement = (
+      blockChainTemplate.content.cloneNode(true) as HTMLElement
+    ).querySelector('.blockchain') as HTMLElement;
     blockChainElement.style.left = block.element.style.left;
     blockChainElement.style.top = block.element.style.top;
     block.element.style.left = null;
@@ -123,6 +131,34 @@ class BlockManager {
 
     blockChain.init();
     return blockChain;
+  }
+
+  chainBlock(block1: Block, block2: Block) {
+    if (block1 === block2) return;
+
+    const blockChain1 = this.getBlockChainOfBlock(block1);
+    const blockChain2 = this.getBlockChainOfBlock(block2);
+
+    if (blockChain1) {
+      blockChain1.addBlockAfter(block1, block2);
+    } else {
+      const blockchain = this.initBlockChain(block1);
+      blockchain.addBlock(block2);
+    }
+
+    if (blockChain2 && blockChain1 !== blockChain2) {
+      blockChain2.removeBlock(block2);
+      if (blockChain2.length < 2) {
+        this.destroyBlockChain(blockChain2);
+      }
+    } else {
+      this._blocks = this._blocks.filter((b) => b !== block2);
+    }
+  }
+
+  // remove blockchain if only one element is remaining
+  destroyBlockChain(blockchain: BlockChain) {
+
   }
 
   getContinuedSequence(noteSequence: INoteSequence): Promise<INoteSequence> {
@@ -142,12 +178,45 @@ class BlockManager {
   initInteractEvents() {
     const blockManager = this;
     // make blocks draggable
-    interact('.block:not(.blockchain .block)').draggable({
+    interact('.block').draggable({
       // inertia: true,
       ignoreFrom: '.grid',
       modifiers: [
         interact.modifiers.restrictRect({
-          restriction: 'parent',
+          restriction: blockManager._containerElement,
+          endOnly: false
+        })
+      ],
+      listeners: {
+        start(event) {
+          const { target } = event;
+          target.setAttribute('drag', 'active');
+        },
+        move(event) {
+          const { target } = event;
+          const x = (parseFloat(target.style.left) || 0) + event.dx;
+          const y = (parseFloat(target.style.top) || 0) + event.dy;
+          target.style.left = `${x}px`;
+          target.style.top = `${y}px`;
+        },
+        end(event) {
+          const { target } = event;
+          target.removeAttribute('drag');
+          // reset position if element was in blockchain
+          if (target.matches('.blockchain .block')) {
+            target.style.left = null;
+            target.style.top = null;
+          }
+        }
+      }
+    });
+
+    interact('.blockchain').draggable({
+      // inertia: true,
+      ignoreFrom: '.grid',
+      modifiers: [
+        interact.modifiers.restrictRect({
+          restriction: blockManager._containerElement,
           endOnly: false
         })
       ],
@@ -161,23 +230,29 @@ class BlockManager {
         }
       }
     });
-    interact('.blockchain').draggable({
-      // inertia: true,
-      ignoreFrom: '.grid',
-      modifiers: [
-        interact.modifiers.restrictRect({
-          restriction: 'parent',
-          endOnly: false
-        })
-      ],
-      listeners: {
-        move(event) {
-          const { target } = event;
-          const x = (parseFloat(target.style.left) || 0) + event.dx;
-          const y = (parseFloat(target.style.top) || 0) + event.dy;
-          target.style.left = `${x}px`;
-          target.style.top = `${y}px`;
-        }
+
+    interact('.dropzone').dropzone({
+      accept: '.block',
+      overlap: 'pointer',
+      ondropactivate() {
+        blockManager._containerElement.setAttribute('dropzones', 'visible');
+      },
+      ondragenter(event) {
+        event.target.classList.add('active');
+      },
+      ondragleave(event) {
+        event.target.classList.remove('active');
+      },
+      ondrop(event) {
+        const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+        dropzoneElement.classList.remove('active');
+        const block1 = blockManager.getBlockById(parseInt(dropzoneElement.parentElement.id, 10));
+        const block2 = blockManager.getBlockById(parseInt(draggableElement.id, 10));
+        blockManager.chainBlock(block1, block2);
+      },
+      ondropdeactivate() {
+        blockManager._containerElement.removeAttribute('dropzones');
       }
     });
 
