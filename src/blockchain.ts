@@ -139,6 +139,16 @@ class BlockChain implements IBlockObject {
   }
 
   interpolate(blockmanager: BlockManager) {
+    if (this._interpolatedBlock) {
+      if (!this._muted) {
+        this.toggleMute();
+      }
+      this.stopInterpolate();
+      return;
+    }
+
+    const interpolateElement = this.element.querySelector('#interpolate');
+    interpolateElement.classList.add('open');
     if (!this.muted) {
       this.toggleMute();
     }
@@ -162,6 +172,13 @@ class BlockChain implements IBlockObject {
         block.render();
       }
     );
+  }
+
+  stopInterpolate() {
+    this._interpolatedBlock = undefined;
+    this._interpolatedSamples = undefined;
+    const interpolateElement = this.element.querySelector('#interpolate');
+    interpolateElement.classList.remove('open');
   }
 }
 

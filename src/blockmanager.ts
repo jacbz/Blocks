@@ -143,8 +143,6 @@ class BlockManager {
 
     const interpolateButton = blockChainElement.querySelector('#bc-interpolate-button');
     interpolateButton.addEventListener('click', () => {
-      const interpolateElement = blockChainElement.querySelector('#interpolate');
-      interpolateElement.classList.add('open');
       blockchain.interpolate(this);
     });
     return blockchain;
