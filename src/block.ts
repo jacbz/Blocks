@@ -11,6 +11,16 @@ class Block implements IBlockObject {
     return this._id;
   }
 
+  private _name = '';
+
+  get name() {
+    return this._name;
+  }
+
+  set name(name: string) {
+    this._name = name;
+  }
+
   private _noteSequence: INoteSequence;
 
   get noteSequence() {
@@ -55,8 +65,19 @@ class Block implements IBlockObject {
     this._element = blockmanager.createBlockDom(this, findFreeSpace);
   }
 
+  clone(blockManager: BlockManager) {
+    const block = new Block(blockManager.nextId(), blockManager);
+    // deep copy
+    const noteSequence = { ...this._noteSequence };
+    noteSequence.notes = [...this._noteSequence.notes];
+    block.noteSequence = noteSequence;
+    block.init();
+    return block;
+  }
+
   init() {
     this._element.setAttribute('id', this._id.toString());
+    this._element.querySelector('.block-name').innerHTML = this._name;
 
     const gridElement = this._element.querySelector('.grid');
     gridElement.querySelectorAll('.row').forEach((row) => row.remove());

@@ -8,7 +8,9 @@ import * as Constants from './constants';
 class BlockManager {
   private _containerElement: HTMLDivElement;
 
-  private _blockObjects: IBlockObject[];
+  private _blockObjects: IBlockObject[] = [];
+
+  private _presetBlocks: Block[] = [];
 
   private _hoveredCellElement: HTMLElement;
 
@@ -27,17 +29,20 @@ class BlockManager {
   }
 
   getAllBlocks(): Block[] {
-    return this._blockObjects.reduce((arr, blockObject) => {
-      if (blockObject instanceof Block) {
-        return [...arr, blockObject];
-      }
-      if (blockObject instanceof BlockChain) {
-        return blockObject.interpolatedBlock
-          ? [...arr, ...blockObject.blocks, blockObject.interpolatedBlock]
-          : [...arr, ...blockObject.blocks];
-      }
-      return arr;
-    }, []);
+    return this._blockObjects.reduce(
+      (arr, blockObject) => {
+        if (blockObject instanceof Block) {
+          return [...arr, blockObject];
+        }
+        if (blockObject instanceof BlockChain) {
+          return blockObject.interpolatedBlock
+            ? [...arr, ...blockObject.blocks, blockObject.interpolatedBlock]
+            : [...arr, ...blockObject.blocks];
+        }
+        return arr;
+      },
+      [...this._presetBlocks]
+    );
   }
 
   getBlockById(id: number): Block {
@@ -58,6 +63,22 @@ class BlockManager {
   nextId() {
     const blocks = this.getAllBlocks();
     return blocks.length > 0 ? Math.max(...blocks.map((b) => b.id)) + 1 : 0;
+  }
+
+  initPresets() {
+    // presets
+    const presetContainer = document.getElementById('presets');
+
+    for (const preset of Constants.PRESETS) {
+      const block = new Block(this.nextId(), this);
+      block.noteSequence = Block.defaultNoteSequence();
+      block.noteSequence.notes = preset.notes;
+      block.name = preset.name;
+      this._presetBlocks.push(block);
+
+      presetContainer.appendChild(block.element);
+      block.init();
+    }
   }
 
   createBlockDom(block: Block, findFreeSpace = false) {
@@ -166,6 +187,10 @@ class BlockManager {
   chainBlock(block1: Block, block2: Block) {
     if (block1 === block2) return;
 
+    if (this._presetBlocks.indexOf(block2) !== -1) {
+      block2 = this.convertPresetBlock(block2, false);
+    }
+
     const blockChain1 = this.getBlockChainOfBlock(block1);
     const blockChain2 = this.getBlockChainOfBlock(block2);
     if (blockChain1) {
@@ -183,6 +208,20 @@ class BlockManager {
     } else {
       this._blockObjects = this._blockObjects.filter((b) => b !== block2);
     }
+  }
+
+  // makes a preset block into an actual block, without destroying it
+  convertPresetBlock(presetBlock: Block, reposition = true) {
+    const clone = presetBlock.clone(this);
+    this._blockObjects.push(clone);
+    if (reposition) {
+      const containerRect = this._containerElement.getBoundingClientRect();
+      const blockRect = presetBlock.element.getBoundingClientRect();
+      clone.element.style.left = `${blockRect.x - containerRect.x}px`;
+      clone.element.style.top = `${blockRect.y - containerRect.y}px`;
+    }
+    this._containerElement.appendChild(clone.element);
+    return clone;
   }
 
   // removes a block from a blockchain
@@ -249,8 +288,8 @@ class BlockManager {
         end(event) {
           const { target } = event;
           target.removeAttribute('drag');
-          // reset position if element was in blockchain
-          if (target.matches('.blockchain .block')) {
+          // reset position if element was in blockchain or preset
+          if (target.matches('.blockchain .block, #presets .block')) {
             target.style.left = null;
             target.style.top = null;
           }
@@ -308,7 +347,7 @@ class BlockManager {
     });
 
     interact('#container').dropzone({
-      accept: '.blockchain .block',
+      accept: '.blockchain .block, #presets .block',
       overlap: 'pointer',
       checker: (
         dragEvent,
@@ -319,17 +358,20 @@ class BlockManager {
         draggable,
         draggableElement
       ) => {
-        // don't trigger drop if dropped within blockchain / interpolation panel
+        // don't trigger drop if dropped within blockchain / interpolation / presets panel
         let parent = '.blockchain';
         if (draggableElement.closest('#interpolate')) {
           parent = '#interpolate';
         }
-        const blockchainRect = draggableElement.closest(parent).getBoundingClientRect();
+        if (draggableElement.closest('#presets')) {
+          parent = '#presets';
+        }
+        const closestRect = draggableElement.closest(parent).getBoundingClientRect();
         const mouseIsInsideBlockchain =
-          event.clientX >= blockchainRect.left &&
-          event.clientX <= blockchainRect.right &&
-          event.clientY >= blockchainRect.top &&
-          event.clientY <= blockchainRect.bottom;
+          event.clientX >= closestRect.left &&
+          event.clientX <= closestRect.right &&
+          event.clientY >= closestRect.top &&
+          event.clientY <= closestRect.bottom;
         return dropped && !mouseIsInsideBlockchain;
       },
       ondropactivate() {
@@ -338,7 +380,11 @@ class BlockManager {
       ondrop(event) {
         const blockElement = event.relatedTarget;
         const block = blockManager.getBlockById(parseInt(blockElement.id, 10));
-        blockManager.releaseBlock(block);
+        if (blockManager._presetBlocks.indexOf(block) !== -1) {
+          blockManager.convertPresetBlock(block);
+        } else {
+          blockManager.releaseBlock(block);
+        }
       },
       ondropdeactivate() {
         blockManager._containerElement.classList.remove('droppable');

@@ -31,6 +31,7 @@
     <div id="container">  
       <template id="block-template">
         <div class="block">
+          <span class="block-name"></span>
           <div class="grid">
             <div id="spinner"><i class="fas fa-spinner fa-pulse fa-3x"></i></div>
           </div>
@@ -55,10 +56,13 @@
           </div>
           <div class="block-actions">
             <button class="circle" id="bc-mute-button" title="Mute these blocks"></button>
-            <button class="circle" id="bc-delete-button" title="Remove these block"></button>
+            <button class="circle" id="bc-delete-button" title="Remove these blocks"></button>
           </div>
         </div>
       </template>
+      <div id="presets">
+        <span id="presets-header">Presets</span>
+      </div>
     </div>
   </div>
 
