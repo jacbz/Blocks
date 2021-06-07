@@ -79,11 +79,11 @@ $grid-height: 120px;
       display: flex;
       flex-direction: column;
       padding: 6px;
+      gap: 8px;
 
       #presets-header {
         align-self: center;
         padding: 4px;
-        margin-bottom: 4px;
       }
 
       .block {
@@ -101,7 +101,7 @@ $grid-height: 120px;
       .block-actions {
         display: none;
       }
-      
+
       .dropzone {
         visibility: hidden;
         opacity: 0;
@@ -229,6 +229,7 @@ $border-radius: 4px;
   .block-name {
     position: absolute;
     margin: 4px;
+    font-size: 80%;
   }
 }
 

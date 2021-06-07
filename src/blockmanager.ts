@@ -427,7 +427,7 @@ class BlockManager {
   findFreeSpaceInContainer(): number[] {
     const blocks = this.getAllBlocks();
     if (blocks.every((b) => !b.element)) {
-      return [200, 200];
+      return [256, 256];
     }
     const containerWidth = this._containerElement.offsetWidth;
     const containerHeight = this._containerElement.offsetHeight;

@@ -170,10 +170,16 @@ class Block implements IBlockObject {
     } else {
       this.addNote(pitch, step);
     }
+    this._noteSequence.notes = this._noteSequence.notes.filter(
+      (n) => !Number.isNaN(n.quantizedStartStep) && !Number.isNaN(n.quantizedEndStep)
+    );
     this.render();
   }
 
   addNote(pitch: number, step: number) {
+    if (step !== 0 && !step) {
+      return;
+    }
     if (
       !this._noteSequence.notes.find(
         (n) => n.pitch === pitch && n.quantizedStartStep === step && n.quantizedEndStep === step + 1
