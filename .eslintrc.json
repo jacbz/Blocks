@@ -14,7 +14,9 @@
     "no-restricted-syntax": 0,
     "comma-dangle": ["error", "never"],
     "import/extensions": "off",
+    "max-classes-per-file": "off",
     "no-underscore-dangle": "off",
+    "no-unused-vars": "off",
     "no-use-before-define": "off",
     "no-param-reassign": 0,
     "object-curly-newline": [

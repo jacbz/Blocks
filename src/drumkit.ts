@@ -1,13 +1,15 @@
+import * as Tone from 'tone';
+import { Player } from 'tone';
+import * as Constants from './constants';
+
+interface IDrumKit {
+  playNote(pitch: number, time: any, count: number): void;
+}
+
 /**
  * A singleton drum kit synthesizer with 9 pitch classes. Based on Magenta.js drumkit.
  */
-
-import * as Tone from 'tone';
-import * as Constants from './constants';
-
-class DrumKit {
-  private static instance: DrumKit;
-
+class SynthDrumKit implements IDrumKit {
   private bassDrum = new Tone.MembraneSynth({
     volume: -3
   }).toDestination();
@@ -89,18 +91,33 @@ class DrumKit {
     (time: any, velocity: number) => this.rideCymbal.triggerAttackRelease('D4', 1.0, time, velocity)
   ];
 
-  static getInstance() {
-    if (!DrumKit.instance) {
-      DrumKit.instance = new DrumKit();
-    }
-    return DrumKit.instance;
-  }
-
-  public playNote(pitch: number, time: any, count: number) {
+  public playNote(pitch: number, time: any, count: number): void {
     const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
     const velocity = Math.min(0.3, 0.1 + (count - 1) * 0.07);
     this.pitchPlayers[pitchIndex](time, velocity);
   }
 }
 
-export default DrumKit;
+/**
+ * A sample-based drumkit by Google, licensed under Apache License, Version 2.0
+ */
+class PlayerDrumKit implements IDrumKit {
+  private _urls = Constants.DRUM_PITCHES.map((pitch) => `/drums/${pitch}.mp3`);
+
+  private _players: Player[];
+
+  constructor() {
+    this._players = this._urls.map((url) => {
+      const player = new Tone.Player(url).toDestination();
+      player.volume.value = -10;
+      return player;
+    });
+  }
+
+  public playNote(pitch: number, time: any, count: number): void {
+    const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
+    this._players[pitchIndex].start(time, 0);
+  }
+}
+
+export { SynthDrumKit, PlayerDrumKit };

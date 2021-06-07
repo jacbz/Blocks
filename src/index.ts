@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import * as Constants from './constants';
-import DrumKit from './drumkit';
+import { PlayerDrumKit } from './drumkit';
 import AppWorker from './worker';
 import BlockManager from './blockmanager';
 
@@ -10,7 +10,7 @@ const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
 
 AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
 const blockManager = new BlockManager(containerElement);
-const drumkit = DrumKit.getInstance();
+const drumkit = new PlayerDrumKit();
 let isPlaying = false;
 let currentStep: number;
 

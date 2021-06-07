@@ -314,6 +314,10 @@ button {
   border: 1px solid silver;
   display: block;
   cursor: pointer;
+  
+  &:focus {
+    outline: none;
+  }
 
   &:hover {
     border: 1px solid white;
