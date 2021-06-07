@@ -3,6 +3,7 @@ import interact from 'interactjs';
 import Block from './block';
 import BlockChain from './blockchain';
 import IBlockObject from './iblockobject';
+import * as Constants from './constants';
 
 class BlockManager {
   private _containerElement: HTMLDivElement;
@@ -148,6 +149,17 @@ class BlockManager {
     interpolateButton.addEventListener('click', () => {
       blockchain.interpolate(this);
     });
+
+    const slider = blockChainElement.querySelector('#interpolate-slider') as HTMLInputElement;
+    slider.setAttribute('max', `${Constants.INTERPOLATION_LENGTH - 1}`);
+    slider.addEventListener('input', () => {
+      if (blockchain.interpolatedBlock) {
+        blockchain.interpolatedBlock.noteSequence =
+          blockchain.interpolatedSamples[slider.valueAsNumber];
+        blockchain.interpolatedBlock.render();
+      }
+    });
+    slider.valueAsNumber = Math.floor(Constants.INTERPOLATION_LENGTH / 2);
     return blockchain;
   }
 

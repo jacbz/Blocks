@@ -415,7 +415,6 @@ input[type='range'] {
   }
 
   @mixin slider-thumb {
-    border: 8px solid #fff;
     height: 18px;
     width: 18px;
     border-radius: 50%;

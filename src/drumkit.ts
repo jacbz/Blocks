@@ -20,7 +20,7 @@ class DrumKit {
       sustain: 0.1,
       release: 0.4
     },
-    volume: -3
+    volume: 0
   }).toDestination();
 
   private closedHihat = new Tone.MetalSynth({

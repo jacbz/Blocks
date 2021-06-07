@@ -68,6 +68,10 @@ class BlockChain implements IBlockObject {
 
   private _interpolatedSamples: INoteSequence[];
 
+  get interpolatedSamples() {
+    return this._interpolatedSamples;
+  }
+
   private _interpolatedBlock: Block;
 
   get interpolatedBlock() {
@@ -115,7 +119,7 @@ class BlockChain implements IBlockObject {
     this.render();
     this.adjustZIndex();
 
-    if (this._interpolatedBlock === newBlock) {
+    if (this._interpolatedBlock === newBlock || this._blocks.length !== 2) {
       this.stopInterpolate();
     }
   }
@@ -132,6 +136,9 @@ class BlockChain implements IBlockObject {
   }
 
   toggleMute() {
+    if (this._interpolatedBlock && this._muted) {
+      return;
+    }
     this.element.querySelector('#bc-mute-button').classList.toggle('muted');
     this._muted = !this.muted;
     for (const block of this._blocks) {
@@ -154,28 +161,19 @@ class BlockChain implements IBlockObject {
 
     const interpolateElement = this.element.querySelector('#interpolate');
     interpolateElement.classList.add('open');
-    if (!this.muted) {
-      this.toggleMute();
-    }
     const slider = this._element.querySelector('#interpolate-slider') as HTMLInputElement;
-    slider.setAttribute('max', `${Constants.INTERPOLATION_LENGTH - 1}`);
-    slider.addEventListener('input', () => {
-      if (this._interpolatedSamples) {
-        block.noteSequence = this._interpolatedSamples[slider.valueAsNumber];
-        block.render();
-      }
-    });
-    slider.valueAsNumber = Math.floor(Constants.INTERPOLATION_LENGTH / 2);
-
     const block = new Block(blockmanager.nextId(), blockmanager);
     block.init();
     interpolateElement.querySelector('.panel').insertBefore(block.element, slider);
-    this._interpolatedBlock = block;
 
     AppWorker.generateInterpolatedSamples(this.first.noteSequence, this.last.noteSequence).then(
       (interpolatedSamples) => {
+        if (!this.muted) {
+          this.toggleMute();
+        }
+        this._interpolatedBlock = block;
         this._interpolatedSamples = interpolatedSamples;
-        block.noteSequence = interpolatedSamples[Math.floor(interpolatedSamples.length / 2)];
+        block.noteSequence = interpolatedSamples[slider.valueAsNumber];
         block.render();
       }
     );
