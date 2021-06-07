@@ -1,5 +1,4 @@
 import * as Tone from 'tone';
-import { Player } from 'tone';
 import * as Constants from './constants';
 
 interface IDrumKit {
@@ -82,12 +81,14 @@ class SynthDrumKit implements IDrumKit {
   private pitchPlayers = [
     (time: any, velocity: number) => this.bassDrum.triggerAttackRelease('C2', '8n', time, velocity),
     (time: any, velocity: number) => this.snareDrum.triggerAttackRelease('16n', time, velocity),
-    (time: any, velocity: number) => this.closedHihat.triggerAttackRelease('G4', 0.3, time, velocity),
+    (time: any, velocity: number) =>
+      this.closedHihat.triggerAttackRelease('G4', 0.3, time, velocity),
     (time: any, velocity: number) => this.openHihat.triggerAttackRelease('G4', 0.3, time, velocity),
     (time: any, velocity: number) => this.lowTom.triggerAttack('G3', time, velocity),
     (time: any, velocity: number) => this.midTom.triggerAttack('C4', time, velocity),
     (time: any, velocity: number) => this.highTom.triggerAttack('F4', time, velocity),
-    (time: any, velocity: number) => this.crashCymbal.triggerAttackRelease('D4', 1.0, time, velocity),
+    (time: any, velocity: number) =>
+      this.crashCymbal.triggerAttackRelease('D4', 1.0, time, velocity),
     (time: any, velocity: number) => this.rideCymbal.triggerAttackRelease('D4', 1.0, time, velocity)
   ];
 
@@ -104,20 +105,24 @@ class SynthDrumKit implements IDrumKit {
 class PlayerDrumKit implements IDrumKit {
   private _urls = Constants.DRUM_PITCHES.map((pitch) => `/drums/${pitch}.mp3`);
 
-  private _players: Player[];
+  private _volumes = [-6, -10, -4, -4, -10, -10, -10, -2, -2];
 
-  constructor() {
-    this._players = this._urls.map((url) => {
-      const player = new Tone.Player(url).toDestination();
-      player.volume.value = -10;
-      return player;
-    });
-  }
+  private _player: Tone.Players = new Tone.Players(
+    this._urls.reduce((toneAudioBuffersUrlMap: Tone.ToneAudioBuffersUrlMap, url, index) => {
+      toneAudioBuffersUrlMap[`${index}`] = url;
+      return toneAudioBuffersUrlMap;
+    }, {}),
+    () => {
+      this._volumes.forEach((volume, index) => {
+        this._player.player(`${index}`).volume.value = volume;
+      });
+    }
+  ).toDestination();
 
   public playNote(pitch: number, time: any, count: number): void {
     const pitchIndex = Constants.DRUM_PITCHES.indexOf(pitch);
-    this._players[pitchIndex].start(time, 0);
+    this._player.player(`${pitchIndex}`).start(time, 0);
   }
 }
 
-export { SynthDrumKit, PlayerDrumKit };
+export { SynthDrumKit, PlayerDrumKit, IDrumKit };

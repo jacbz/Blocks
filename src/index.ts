@@ -1,16 +1,19 @@
 import * as Tone from 'tone';
 import * as Constants from './constants';
-import { PlayerDrumKit } from './drumkit';
+import { PlayerDrumKit, SynthDrumKit, IDrumKit } from './drumkit';
 import AppWorker from './worker';
 import BlockManager from './blockmanager';
 
 const containerElement = document.getElementById('container') as HTMLDivElement;
 const volumeSlider = document.getElementById('volume') as HTMLInputElement;
 const volumeLabel = document.getElementById('bpm') as HTMLSpanElement;
+const drumkitSwitch = document.getElementById('drumkit') as HTMLInputElement;
 
 AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
 const blockManager = new BlockManager(containerElement);
-const drumkit = new PlayerDrumKit();
+const synthDrumKit = new SynthDrumKit();
+const playerDrumKit = new PlayerDrumKit();
+let drumkit: IDrumKit = synthDrumKit;
 let isPlaying = false;
 let currentStep: number;
 
@@ -96,6 +99,7 @@ const container = document.querySelector('#test-panel');
 for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
   const button = document.createElement('button');
   button.innerText = Constants.DRUM_NAMES[i];
+  // eslint-disable-next-line no-loop-func
   button.addEventListener('click', () => {
     drumkit.playNote(Constants.DRUM_PITCHES[i], '+0', 1);
   });
@@ -108,3 +112,12 @@ volumeSlider.addEventListener('input', () => {
   volumeLabel.innerText = volumeSlider.value;
 });
 volumeSlider.valueAsNumber = Constants.START_BPM;
+
+// drumkit switch
+drumkitSwitch.addEventListener('change', (event) => {
+  if ((event.currentTarget as HTMLInputElement).checked) {
+    drumkit = playerDrumKit;
+  } else {
+    drumkit = synthDrumKit;
+  }
+});
