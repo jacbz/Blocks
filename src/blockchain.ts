@@ -5,7 +5,7 @@ import * as Constants from './constants';
 import AppWorker from './worker';
 import BlockManager from './blockmanager';
 
-class BlockChain implements IBlockObject {
+class Blockchain implements IBlockObject {
   private _blocks: Block[] = [];
 
   get blocks() {
@@ -82,6 +82,10 @@ class BlockChain implements IBlockObject {
     return this._interpolatedBlock;
   }
 
+  // after toggle note, wait for an interval before interpolating again;
+  // this is the timer for the setInterval function
+  private _toggleNoteInterpolationTimerId: number;
+
   constructor(element: HTMLElement) {
     this._element = element;
   }
@@ -125,13 +129,13 @@ class BlockChain implements IBlockObject {
     this.adjustZIndex();
 
     if (this._interpolatedBlock === newBlock || this._blocks.length !== 2) {
-      this.stopInterpolate();
+      this.stopInterpolation();
     }
   }
 
   removeBlock(block: Block) {
     if (this._interpolatedBlock === block) {
-      this.stopInterpolate();
+      this.stopInterpolation();
     } else {
       this._blocks = this.blocks.filter((b) => b !== block);
       const blocksElement = this.element.querySelector('.blocks');
@@ -141,14 +145,14 @@ class BlockChain implements IBlockObject {
   }
 
   adjustZIndex() {
-    for (let i = 0; i < this.length; i += 1) {
+    this._blocks.forEach((block, i) => {
       this._blocks[i].element.style.zIndex = `${this.length - i}`;
-    }
+    });
   }
 
-  interpolate(blockmanager: BlockManager) {
+  startInterpolation(blockmanager: BlockManager) {
     if (this._interpolatedBlock) {
-      this.stopInterpolate();
+      this.stopInterpolation();
       return;
     }
 
@@ -159,6 +163,12 @@ class BlockChain implements IBlockObject {
     block.init();
     interpolateElement.querySelector('.panel').insertBefore(block.element, slider);
 
+    this.interpolate(block);
+  }
+
+  interpolate(block: Block) {
+    block.isWorking = true;
+    const slider = this._element.querySelector('#interpolate-slider') as HTMLInputElement;
     AppWorker.generateInterpolatedSamples(this.first.noteSequence, this.last.noteSequence).then(
       (interpolatedSamples) => {
         this._interpolatedBlock = block;
@@ -169,13 +179,22 @@ class BlockChain implements IBlockObject {
     );
   }
 
-  stopInterpolate() {
+  stopInterpolation() {
     this._interpolatedBlock = undefined;
     this._interpolatedSamples = undefined;
     const interpolateElement = this.element.querySelector('#interpolate');
     interpolateElement.classList.remove('open');
     interpolateElement.querySelectorAll('.block').forEach((block) => block.remove());
   }
+
+  setToggleNoteInterpolationTimer() {
+    if (this._toggleNoteInterpolationTimerId) {
+      window.clearTimeout(this._toggleNoteInterpolationTimerId);
+    }
+    this._toggleNoteInterpolationTimerId = window.setTimeout(() => {
+      this.interpolate(this.interpolatedBlock);
+    }, 400);
+  }
 }
 
-export default BlockChain;
+export default Blockchain;

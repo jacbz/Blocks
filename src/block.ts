@@ -29,7 +29,7 @@ class Block implements IBlockObject {
 
   set noteSequence(noteSequence: INoteSequence) {
     this._noteSequence = noteSequence;
-    this._isWorking = false;
+    this.isWorking = false;
   }
 
   private _element: HTMLElement;
@@ -61,6 +61,11 @@ class Block implements IBlockObject {
   }
 
   private _isWorking: boolean = true;
+
+  set isWorking(isWorking: boolean) {
+    this._isWorking = isWorking;
+    this._element.querySelector('.grid').classList.toggle('working', isWorking);
+  }
 
   constructor(id: number, blockmanager: BlockManager, findFreeSpace = false) {
     this._id = id;
@@ -115,13 +120,6 @@ class Block implements IBlockObject {
     gridElement.querySelectorAll('.cell').forEach((cell) => {
       cell.className = 'cell';
     });
-
-    // set working
-    if (this._isWorking) {
-      gridElement.classList.add('working');
-    } else {
-      gridElement.classList.remove('working');
-    }
 
     // highlight active notes
     if (!this._noteSequence) {

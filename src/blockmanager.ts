@@ -1,7 +1,7 @@
 import { INoteSequence } from '@magenta/music/es6/protobuf';
 import interact from 'interactjs';
 import Block from './block';
-import BlockChain from './blockchain';
+import Blockchain from './blockchain';
 import IBlockObject from './iblockobject';
 import * as Constants from './constants';
 
@@ -34,7 +34,7 @@ class BlockManager {
         if (blockObject instanceof Block) {
           return [...arr, blockObject];
         }
-        if (blockObject instanceof BlockChain) {
+        if (blockObject instanceof Blockchain) {
           return blockObject.interpolatedBlock
             ? [...arr, ...blockObject.blocks, blockObject.interpolatedBlock]
             : [...arr, ...blockObject.blocks];
@@ -50,9 +50,9 @@ class BlockManager {
   }
 
   // return null if block is not in any blockchain
-  getBlockChainOfBlock(block: Block): BlockChain {
-    for (const blockChain of this._blockObjects.filter((b) => b instanceof BlockChain)) {
-      const bc = blockChain as BlockChain;
+  getBlockchainOfBlock(block: Block): Blockchain {
+    for (const blockChain of this._blockObjects.filter((b) => b instanceof Blockchain)) {
+      const bc = blockChain as Blockchain;
       if (bc.interpolatedBlock === block || bc.blocks.find((b) => b === block)) {
         return bc;
       }
@@ -135,7 +135,7 @@ class BlockManager {
     block.init();
   }
 
-  initBlockchainDom(block: Block): BlockChain {
+  initBlockchainDom(block: Block): Blockchain {
     const blockChainTemplate = document.getElementById(
       'blockchain-template'
     ) as HTMLTemplateElement;
@@ -149,7 +149,7 @@ class BlockManager {
     this._containerElement.appendChild(blockChainElement);
     this._containerElement.removeChild(block.element);
 
-    const blockchain = new BlockChain(blockChainElement);
+    const blockchain = new Blockchain(blockChainElement);
     blockchain.addBlock(block);
     const index = this._blockObjects.indexOf(block);
     this._blockObjects[index] = blockchain;
@@ -167,7 +167,7 @@ class BlockManager {
 
     const interpolateButton = blockChainElement.querySelector('#bc-interpolate-button');
     interpolateButton.addEventListener('click', () => {
-      blockchain.interpolate(this);
+      blockchain.startInterpolation(this);
     });
 
     const slider = blockChainElement.querySelector('#interpolate-slider') as HTMLInputElement;
@@ -190,8 +190,8 @@ class BlockManager {
       block2 = this.convertPresetBlock(block2, false);
     }
 
-    const blockChain1 = this.getBlockChainOfBlock(block1);
-    const blockChain2 = this.getBlockChainOfBlock(block2);
+    const blockChain1 = this.getBlockchainOfBlock(block1);
+    const blockChain2 = this.getBlockchainOfBlock(block2);
     if (blockChain1) {
       blockChain1.addBlockAfter(block1, block2);
     } else {
@@ -225,7 +225,7 @@ class BlockManager {
 
   // removes a block from a blockchain
   releaseBlock(blockToRelease: Block) {
-    const blockchain = this.getBlockChainOfBlock(blockToRelease);
+    const blockchain = this.getBlockchainOfBlock(blockToRelease);
 
     // if there are only two blocks left, release both (but last one first to preserve pos)
     const blocksToRelease =
@@ -246,11 +246,11 @@ class BlockManager {
       this._containerElement.appendChild(block.element);
     }
 
-    if (blockchain.length === 0) this.destroyBlockChain(blockchain);
+    if (blockchain.length === 0) this.destroyBlockchain(blockchain);
   }
 
   // remove empty blockchain
-  destroyBlockChain(blockchain: BlockChain) {
+  destroyBlockchain(blockchain: Blockchain) {
     this._blockObjects = this._blockObjects.filter((b) => b !== blockchain);
     blockchain.element.remove();
   }
@@ -390,6 +390,15 @@ class BlockManager {
       }
     });
 
+    const toggleNote = (block: Block) => {
+      block.toggleNote(blockManager._hoveredCellElement);
+
+      const blockchain = blockManager.getBlockchainOfBlock(block);
+      if (blockchain) {
+        blockchain.setToggleNoteInterpolationTimer();
+      }
+    };
+
     // dragging on the grid to toggle cells
     let moved: HTMLElement[] = []; // already toggled in this interaction
     interact('.grid')
@@ -405,8 +414,8 @@ class BlockManager {
             const blockId = parseInt(blockManager._hoveredCellElement.getAttribute('block'), 10);
             const block = blockManager.getBlockById(blockId);
             if (block) {
-              block.toggleNote(blockManager._hoveredCellElement);
               moved.push(blockManager._hoveredCellElement);
+              toggleNote(block);
             }
           }
         }
@@ -417,7 +426,7 @@ class BlockManager {
         const blockId = parseInt(event.target.getAttribute('block'), 10);
         const block = blockManager.getBlockById(blockId);
         if (block) {
-          block.toggleNote(event.target);
+          toggleNote(block);
         }
       });
   }
