@@ -9,6 +9,16 @@ $fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
 
 $title-font: 'Monoton', sans-serif;
 $body-font: 'Montserrat', 'Segoe UI', sans-serif;
+$background-gradient: linear-gradient(to right, #b82151, #1d2671);
+$container-background: rgba(0, 0, 0, 0.25);
+$blockchain-background: rgba(255, 255, 255, 0.2);
+$block-background: rgba(0, 0, 0, 0.35);
+$dropzone-background: rgba(0, 0, 0, 0.4);
+$dropzone-active-background: rgba(255, 255, 255, 0.3);
+$droppable-background: rgba(0, 0, 0, 0.15);
+$presets-background: rgba(0, 0, 0, 0.1);
+$button-background: rgba(0, 0, 0, 0.1);
+$switch-background: rgba(0, 0, 0, 0.35);
 
 * {
   font-family: $body-font;
@@ -16,20 +26,85 @@ $body-font: 'Montserrat', 'Segoe UI', sans-serif;
 }
 
 body {
-  background: linear-gradient(to right, #b82151, #1d2671);
+  background: $background-gradient;
   overflow: hidden;
   margin: 0;
-  padding: 12px;
+  padding: 8px;
   display: flex;
   flex-flow: column;
   align-items: center;
   height: 100vh;
 }
 
-header {
-  font-family: $title-font;
-  font-size: 350%;
-  user-select: none;
+#toolbar {
+  display: flex;
+  gap: 24px;
+
+  #header {
+    font-family: $title-font;
+    font-size: 400%;
+    user-select: none;
+    margin: -8px 0px;
+  }
+
+  #play-button {
+    @extend %fa-icon;
+    @extend .fas;
+    &:before {
+      content: fa-content($fa-var-play);
+      color: white;
+      font-size: 150%;
+    }
+    background: $container-background;
+    transition: background 0.2s;
+    height: 72px;
+    width: 72px;
+    border-radius: 50%;
+    border: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+
+    &.isplaying {
+      &:before {
+        content: fa-content($fa-var-stop);
+      }
+    }
+
+    &:hover {
+      background: $blockchain-background;
+    }
+  }
+
+  #tempo-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+    margin-bottom: auto;
+
+    #tempo-display {
+      background: $container-background;
+      transition: background 0.2s;
+      line-height: 26px;
+      border-radius: 2px;
+      width: 66px;
+      text-align: center;
+      position: relative;
+
+      &.active {        
+        background: $blockchain-background;
+      }
+    }
+  }
+
+  #switch-container {
+    text-align: center;
+    display: flex;
+    margin-left: auto;
+    margin-top: auto;
+    align-items: center;
+    gap: 8px;      
+  }
 }
 
 .centered {
@@ -54,13 +129,8 @@ $grid-height: 120px;
   flex-direction: column;
   gap: 12px;
 
-  #actions {
-    display: flex;
-    gap: 12px;
-  }
-
   #container {
-    background: rgba(0, 0, 0, 0.25);
+    background: $container-background;
     width: calc(95vw - 40px);
     flex: 1;
     overflow: hidden;
@@ -68,12 +138,12 @@ $grid-height: 120px;
     transition: background 0.2s;
 
     &.droppable {
-      background: rgba(0, 0, 0, 0.15);
+      background: $droppable-background;
     }
 
     #presets {
       position: absolute;
-      background: rgba(0, 0, 0, 0.1);
+      background: $presets-background;
       height: 100%;
       right: 0;
       display: flex;
@@ -84,6 +154,7 @@ $grid-height: 120px;
       #presets-header {
         align-self: center;
         padding: 4px;
+        font-weight: bold;
       }
 
       .block {
@@ -91,7 +162,7 @@ $grid-height: 120px;
         padding: 3px;
       }
 
-      .grid {        
+      .grid {
         pointer-events: none;
         width: $grid-width * 0.6;
         height: $grid-height * 0.6;
@@ -110,13 +181,12 @@ $grid-height: 120px;
   }
 }
 
-$block-chain-background: rgba(255, 255, 255, 0.2);
 $block-padding: 9px;
 $border-radius: 4px;
 .blockchain {
   display: inline-flex;
   padding: 6px;
-  background-color: $block-chain-background;
+  background-color: $blockchain-background;
   backdrop-filter: blur(3px);
   border-radius: 4px;
   position: absolute;
@@ -143,7 +213,7 @@ $border-radius: 4px;
       margin-right: auto;
 
       &.open {
-        background: $block-chain-background;
+        background: $blockchain-background;
         border-top-left-radius: $border-radius;
         border-top-right-radius: $border-radius;
 
@@ -220,7 +290,7 @@ $border-radius: 4px;
 
 .block {
   display: inline-flex;
-  background-color: rgba(0, 0, 0, 0.35);
+  background-color: $block-background;
   backdrop-filter: blur(3px);
   padding: 7px;
   border-radius: 4px;
@@ -263,7 +333,7 @@ $dropzone-border: 4px;
   bottom: 0;
   border: dashed $dropzone-border #aaa;
   border-radius: $dropzone-border;
-  background: rgba(0, 0, 0, 0.4);
+  background: $dropzone-background;
   padding: $dropzone-padding;
   display: flex;
   flex-direction: row;
@@ -271,7 +341,7 @@ $dropzone-border: 4px;
   justify-content: center;
 
   &.active {
-    background: rgba(46, 204, 113, 0.9);
+    background: $dropzone-active-background;
     transition: background 0.2s;
   }
 }
@@ -354,7 +424,7 @@ $active-color: rgb(112, 153, 148);
 }
 
 button {
-  background: rgba(0, 0, 0, 0.1);
+  background: $button-background;
   border: 1px solid silver;
   display: block;
   cursor: pointer;
@@ -365,11 +435,6 @@ button {
 
   &:hover {
     border: 1px solid white;
-  }
-
-  &.square {
-    font-size: inherit;
-    padding: 4px 8px;
   }
 
   &.circle {
@@ -426,7 +491,7 @@ $muted-color: red;
 
 footer {
   font-size: 85%;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   text-align: center;
   line-height: 130%;
 
@@ -475,42 +540,33 @@ input[type='range'] {
   }
 }
 
-.switch-container {
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
+.switch {
+  display: inline-block;
+  font-size: 20px; /* 1 */
+  height: 1em;
+  width: 2em;
+  background: $switch-background;
+  border-radius: 1em;
 
-  .switch {
-    display: inline-block;
-    font-size: 20px; /* 1 */
+  input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  div {
     height: 1em;
-    width: 2em;
-    background: rgba(0, 0, 0, 0.35);
+    width: 1em;
     border-radius: 1em;
+    background: #fff;
+    box-shadow: 0 0.1em 0.3em $switch-background;
+    -webkit-transition: all 300ms;
+    -moz-transition: all 300ms;
+    transition: all 300ms;
+  }
 
-    input {
-      position: absolute;
-      opacity: 0;
-    }
-
-    div {
-      height: 1em;
-      width: 1em;
-      border-radius: 1em;
-      background: #fff;
-      box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
-      -webkit-transition: all 300ms;
-      -moz-transition: all 300ms;
-      transition: all 300ms;
-    }
-
-    input:checked + div {
-      -webkit-transform: translate3d(100%, 0, 0);
-      -moz-transform: translate3d(100%, 0, 0);
-      transform: translate3d(100%, 0, 0);
-    }
+  input:checked + div {
+    -webkit-transform: translate3d(100%, 0, 0);
+    -moz-transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
   }
 }

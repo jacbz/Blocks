@@ -83,8 +83,8 @@ class Block implements IBlockObject {
   }
 
   setPosition(x: number, y: number) {
-    this._element.style.left = `${x}px`;
-    this._element.style.top = `${y}px`;
+    this._element.style.left = x ? `${x}px` : null;
+    this._element.style.top = y ? `${y}px` : null;
   }
 
   init() {

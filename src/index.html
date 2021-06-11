@@ -7,17 +7,18 @@
 </head>
 
 <body>
-  <header>BLOCKS</header>
-
   <div class="centered" id="loading">
     <span id="loading-text">Loading...</span>
   </div>
   <div class="centered" id="contents" style="display: none">    
-    <div id="actions">
-      <button id="play-button" class="square">Play</button>
-      <input type="range" min="40" max="200" class="slider" id="volume">
-      <span><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span>      
-      <div class="switch-container">
+    <div id="toolbar">
+      <div id="header">BLOCKS</div>
+      <button id="play-button"></button>
+      <div id="tempo-container">
+        <div id="tempo-display"><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></div>
+        <input type="range" class="slider" id="volume" style="width: 180px">
+      </div>
+      <div id="switch-container">
         Synth
         <label class="switch"><input type="checkbox" id="drumkit"/><div></div>
         </label>

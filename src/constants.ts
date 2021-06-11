@@ -1,6 +1,8 @@
 export const TOTAL_STEPS = 32;
 export const STEPS_PER_QUARTER = 4;
+export const MIN_BPM = 40;
 export const START_BPM = 120;
+export const MAX_BPM = 200;
 
 export const INTERPOLATION_LENGTH = 40;
 
