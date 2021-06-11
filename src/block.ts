@@ -99,6 +99,7 @@ class Block implements IBlockObject {
       for (let col = 0; col < Constants.TOTAL_STEPS; col += 1) {
         const cellElement = document.createElement('div');
         cellElement.classList.add('cell');
+        cellElement.title = Constants.DRUM_NAMES[Constants.DRUM_PITCHES.length - row - 1];
 
         cellElement.setAttribute('block', this._id.toString());
         cellElement.setAttribute('row', row.toString());
@@ -208,8 +209,7 @@ class Block implements IBlockObject {
   }
 
   doMagic() {
-    this._isWorking = true;
-    this.render();
+    this.isWorking = true;
 
     AppWorker.generateSamples(1).then((samples) => {
       [this.noteSequence] = samples;
@@ -218,8 +218,7 @@ class Block implements IBlockObject {
   }
 
   continue() {
-    this._isWorking = true;
-    this.render();
+    this.isWorking = true;
 
     AppWorker.continueSequence(this._noteSequence).then((noteSequence) => {
       this.noteSequence = noteSequence;

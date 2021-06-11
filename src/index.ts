@@ -1,6 +1,5 @@
 import * as Tone from 'tone';
 import * as Constants from './constants';
-import { PlayerDrumKit, SynthDrumKit, IDrumKit } from './drumkit';
 import AppWorker from './worker';
 import BlockManager from './blockmanager';
 
@@ -11,11 +10,6 @@ const drumkitSwitch = document.getElementById('drumkit') as HTMLInputElement;
 
 AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
 const blockManager = new BlockManager(containerElement);
-const synthDrumKit = new SynthDrumKit();
-const playerDrumKit = new PlayerDrumKit();
-let drumkit: IDrumKit = synthDrumKit;
-let isPlaying = false;
-let currentStep: number;
 
 init();
 function init() {
@@ -42,51 +36,19 @@ function finishLoading() {
   blockManager.initPresets();
 }
 
-function play() {
-  const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
-
-  currentStep = 0;
-  Tone.Transport.scheduleRepeat((time: number) => {
-    const pitchToCountMap = new Map<number, number>();
-    blockManager.do((b) => {
-      b.currentStep = currentStep;
-      b.getPitchesToPlay().forEach((p) => {
-        pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1);
-      });
-      b.render();
-    });
-
-    for (const [pitch, count] of pitchToCountMap) {
-      drumkit.playNote(pitch, time, count);
-    }
-
-    currentStep += 1;
-  }, smallestDivision);
-
-  Tone.Transport.start();
-}
-
-function stop() {
-  Tone.Transport.stop();
-  Tone.Transport.cancel();
-  currentStep = undefined;
-  blockManager.do((b) => {
-    b.currentStep = undefined;
-    b.render();
-  });
-}
-
 // play button
 const btn = document.getElementById('play-button') as HTMLButtonElement;
 btn.addEventListener('click', () => {
-  if (isPlaying) {
-    stop();
+  if (blockManager.isPlaying) {
+    blockManager.stop();
     btn.innerText = 'Play';
-    isPlaying = false;
+    blockManager.isPlaying = false;
   } else {
-    Tone.start().then(play);
+    Tone.start().then(() => {
+      blockManager.play();
+    });
     btn.innerText = 'Stop';
-    isPlaying = true;
+    blockManager.isPlaying = true;
   }
 });
 
@@ -94,18 +56,6 @@ btn.addEventListener('click', () => {
 document.getElementById('new-button').addEventListener('click', () => {
   blockManager.createBlock();
 });
-
-// test panel
-const container = document.querySelector('#test-panel');
-for (let i = 0; i < Constants.DRUM_PITCHES.length; i += 1) {
-  const button = document.createElement('button');
-  button.innerText = Constants.DRUM_NAMES[i];
-  // eslint-disable-next-line no-loop-func
-  button.addEventListener('click', () => {
-    drumkit.playNote(Constants.DRUM_PITCHES[i], '+0', 1);
-  });
-  container.appendChild(button);
-}
 
 // volume slider
 volumeSlider.addEventListener('input', () => {
@@ -116,9 +66,5 @@ volumeSlider.valueAsNumber = Constants.START_BPM;
 
 // drumkit switch
 drumkitSwitch.addEventListener('change', (event) => {
-  if ((event.currentTarget as HTMLInputElement).checked) {
-    drumkit = playerDrumKit;
-  } else {
-    drumkit = synthDrumKit;
-  }
+  blockManager.toggleDrumkit();
 });

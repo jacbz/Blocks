@@ -1,11 +1,35 @@
 import { INoteSequence } from '@magenta/music/es6/protobuf';
+import * as Tone from 'tone';
 import interact from 'interactjs';
 import Block from './block';
 import Blockchain from './blockchain';
 import IBlockObject from './iblockobject';
 import * as Constants from './constants';
+import { PlayerDrumKit, SynthDrumKit, IDrumKit } from './drumkit';
 
 class BlockManager {
+  private _synthDrumKit = new SynthDrumKit();
+
+  private _playerDrumKit = new PlayerDrumKit();
+
+  private _drumkit: IDrumKit = this._synthDrumKit;
+
+  get drumkit() {
+    return this._drumkit;
+  }
+
+  private _isPlaying = false;
+
+  get isPlaying() {
+    return this._isPlaying;
+  }
+
+  set isPlaying(isPlaying: boolean) {
+    this._isPlaying = isPlaying;
+  }
+
+  private _currentStep: number;
+
   private _containerElement: HTMLDivElement;
 
   private _blockObjects: IBlockObject[] = [];
@@ -16,6 +40,10 @@ class BlockManager {
 
   private _highestZIndex = 0;
 
+  // after toggle note, wait for an interval before playing another preview sound
+  // this is the timer for the setInterval function
+  private _toggleNotePreviewSoundTimerId: number;
+
   constructor(containerElement: HTMLDivElement) {
     this._containerElement = containerElement;
     this._blockObjects = [];
@@ -23,9 +51,46 @@ class BlockManager {
     this.initInteractEvents();
   }
 
-  // eslint-disable-next-line no-unused-vars
-  do(func: (b: IBlockObject) => void) {
-    this._blockObjects.forEach(func);
+  play() {
+    const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
+
+    this._currentStep = 0;
+    Tone.Transport.scheduleRepeat((time: number) => {
+      const pitchToCountMap = new Map<number, number>();
+      this._blockObjects.forEach((b) => {
+        b.currentStep = this._currentStep;
+        b.getPitchesToPlay().forEach((p) => {
+          pitchToCountMap.set(p, pitchToCountMap.get(p) ? pitchToCountMap.get(p) + 1 : 1);
+        });
+        b.render();
+      });
+
+      for (const [pitch, count] of pitchToCountMap) {
+        this.drumkit.playNote(pitch, time, count);
+      }
+
+      this._currentStep += 1;
+    }, smallestDivision);
+
+    Tone.Transport.start();
+  }
+
+  stop() {
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    this._currentStep = undefined;
+    this._blockObjects.forEach((b) => {
+      b.currentStep = undefined;
+      b.render();
+    });
+  }
+
+  toggleDrumkit() {
+    if (this._drumkit === this._synthDrumKit) {
+      this._drumkit = this._playerDrumKit;
+    } else {
+      this._drumkit = this._synthDrumKit;
+    }
   }
 
   getAllBlocks(): Block[] {
@@ -255,6 +320,15 @@ class BlockManager {
     blockchain.element.remove();
   }
 
+  setToggleNotePreviewSoundTimer() {
+    if (this._toggleNotePreviewSoundTimerId) {
+      window.clearTimeout(this._toggleNotePreviewSoundTimerId);
+    }
+    this._toggleNotePreviewSoundTimerId = window.setTimeout(() => {
+      this._toggleNotePreviewSoundTimerId = null;
+    }, 200);
+  }
+
   initInteractEvents() {
     const blockManager = this;
     const ignoreFrom = '.grid, button, input';
@@ -392,6 +466,13 @@ class BlockManager {
 
     const toggleNote = (block: Block) => {
       block.toggleNote(blockManager._hoveredCellElement);
+
+      // preview sound
+      if (!blockManager.isPlaying && !blockManager._toggleNotePreviewSoundTimerId) {
+        const pitchIndex = Constants.DRUM_PITCHES.length - parseInt(blockManager._hoveredCellElement.getAttribute('row'), 10) - 1;
+        blockManager.drumkit.playNote(Constants.DRUM_PITCHES[pitchIndex], '+0', 1);
+        blockManager.setToggleNotePreviewSoundTimer();
+      }
 
       const blockchain = blockManager.getBlockchainOfBlock(block);
       if (blockchain) {
