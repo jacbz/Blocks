@@ -2,7 +2,6 @@ export const TOTAL_STEPS = 32;
 export const STEPS_PER_QUARTER = 4;
 export const START_BPM = 120;
 
-export const NUMBER_OF_BLOCKS_AT_START = 1;
 export const INTERPOLATION_LENGTH = 40;
 
 // see https://github.com/magenta/magenta-js/blob/master/music/src/core/constants.ts
@@ -23,6 +22,10 @@ export const TEMPERATURE = 1.1;
 
 // some of these are adapted from https://www.onlinedrummer.com/
 export const PRESETS = [
+  {
+    name: 'Empty',
+    notes: []
+  },
   {
     name: 'Standard',
     notes: [

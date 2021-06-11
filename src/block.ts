@@ -67,9 +67,9 @@ class Block implements IBlockObject {
     this._element.querySelector('.grid').classList.toggle('working', isWorking);
   }
 
-  constructor(id: number, blockmanager: BlockManager, findFreeSpace = false) {
+  constructor(id: number, blockmanager: BlockManager) {
     this._id = id;
-    this._element = blockmanager.createBlockDom(this, findFreeSpace);
+    this._element = blockmanager.createBlockDom(this);
   }
 
   clone(blockManager: BlockManager) {
@@ -80,6 +80,11 @@ class Block implements IBlockObject {
     block.noteSequence = noteSequence;
     block.init();
     return block;
+  }
+
+  setPosition(x: number, y: number) {
+    this._element.style.left = `${x}px`;
+    this._element.style.top = `${y}px`;
   }
 
   init() {

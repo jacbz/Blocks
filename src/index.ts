@@ -21,11 +21,9 @@ function init() {
 }
 
 function initStartingBlocks() {
-  AppWorker.generateSamples(Constants.NUMBER_OF_BLOCKS_AT_START).then((samples) => {
-    for (const sample of samples) {
-      blockManager.createBlock(sample);
-    }
-
+  AppWorker.generateSamples(1).then((samples) => {
+    const block = blockManager.createBlock(samples[0]);
+    block.setPosition(256, 256);
     finishLoading();
   });
 }
@@ -50,11 +48,6 @@ btn.addEventListener('click', () => {
     btn.innerText = 'Stop';
     blockManager.isPlaying = true;
   }
-});
-
-// new block button
-document.getElementById('new-button').addEventListener('click', () => {
-  blockManager.createBlock();
 });
 
 // volume slider

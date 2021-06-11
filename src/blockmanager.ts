@@ -146,18 +146,12 @@ class BlockManager {
     }
   }
 
-  createBlockDom(block: Block, findFreeSpace = false) {
+  createBlockDom(block: Block) {
     // position
     const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
     const blockElement = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector(
       '.block'
     ) as HTMLDivElement;
-
-    if (findFreeSpace) {
-      const coords = this.findFreeSpaceInContainer();
-      blockElement.style.left = `${coords[0]}px`;
-      blockElement.style.top = `${coords[1]}px`;
-    }
 
     const grid = blockElement.querySelector('.grid');
     grid.addEventListener(
@@ -192,12 +186,13 @@ class BlockManager {
   }
 
   createBlock(noteSequence?: INoteSequence) {
-    const block = new Block(this.nextId(), this, true);
+    const block = new Block(this.nextId(), this);
     block.noteSequence = noteSequence || Block.defaultNoteSequence();
     this._blockObjects.push(block);
 
     this._containerElement.appendChild(block.element);
     block.init();
+    return block;
   }
 
   initBlockchainDom(block: Block): Blockchain {
@@ -209,8 +204,7 @@ class BlockManager {
     ).querySelector('.blockchain') as HTMLElement;
     blockChainElement.style.left = `${parseFloat(block.element.style.left) - 10}px`;
     blockChainElement.style.top = `${parseFloat(block.element.style.top) - 10}px`;
-    block.element.style.left = null;
-    block.element.style.top = null;
+    block.setPosition(null, null);
     this._containerElement.appendChild(blockChainElement);
     this._containerElement.removeChild(block.element);
 
@@ -276,16 +270,15 @@ class BlockManager {
 
   // makes a preset block into an actual block, without destroying it
   convertPresetBlock(presetBlock: Block, reposition = true) {
-    const clone = presetBlock.clone(this);
-    this._blockObjects.push(clone);
+    const clonedBlock = presetBlock.clone(this);
+    this._blockObjects.push(clonedBlock);
     if (reposition) {
       const containerRect = this._containerElement.getBoundingClientRect();
       const blockRect = presetBlock.element.getBoundingClientRect();
-      clone.element.style.left = `${blockRect.x - containerRect.x}px`;
-      clone.element.style.top = `${blockRect.y - containerRect.y}px`;
+      clonedBlock.setPosition(blockRect.x - containerRect.x, blockRect.y - containerRect.y);
     }
-    this._containerElement.appendChild(clone.element);
-    return clone;
+    this._containerElement.appendChild(clonedBlock.element);
+    return clonedBlock;
   }
 
   // removes a block from a blockchain
@@ -305,8 +298,7 @@ class BlockManager {
       this._blockObjects.push(block);
 
       // recalculate position
-      block.element.style.left = `${blockRect.x - containerRect.x}px`;
-      block.element.style.top = `${blockRect.y - containerRect.y}px`;
+      block.setPosition(blockRect.x - containerRect.x, blockRect.y - containerRect.y);
 
       this._containerElement.appendChild(block.element);
     }
@@ -510,50 +502,6 @@ class BlockManager {
           toggleNote(block);
         }
       });
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  findFreeSpaceInContainer(): number[] {
-    const blocks = this.getAllBlocks();
-    if (blocks.every((b) => !b.element)) {
-      return [256, 256];
-    }
-    const containerWidth = this._containerElement.offsetWidth;
-    const containerHeight = this._containerElement.offsetHeight;
-    const blockWidth = 360;
-    const blockHeight = 130;
-    const margin = 16;
-
-    const maxPermittedX = containerWidth - blockWidth - margin;
-    const maxPermittedY = containerHeight - blockHeight - margin;
-
-    let coords = [0, 0];
-    let tries = 0;
-    do {
-      coords = [Math.random() * maxPermittedX, Math.random() * maxPermittedY];
-      tries += 1;
-    } while (this.anyBlockOccupying(coords[0], coords[1], blocks) && tries < 100);
-
-    return coords;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  anyBlockOccupying(x: number, y: number, blocks: Block[]): boolean {
-    const blockWidth = 360;
-    const blockHeight = 130;
-
-    const containerRect = this._containerElement.getBoundingClientRect();
-    return blocks.some((b) => {
-      const blockRect = b.element.getBoundingClientRect();
-      const blockX = blockRect.x - containerRect.x;
-      const blockY = blockRect.y - containerRect.y;
-      return (
-        blockX + blockWidth >= x &&
-        blockX <= x + blockWidth &&
-        blockY + blockHeight >= y &&
-        blockY <= y + blockHeight
-      );
-    });
   }
 }
 
