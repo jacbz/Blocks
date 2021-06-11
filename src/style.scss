@@ -111,7 +111,7 @@ $grid-height: 120px;
 }
 
 $block-chain-background: rgba(255, 255, 255, 0.2);
-$block-padding: 8px;
+$block-padding: 9px;
 $border-radius: 4px;
 .blockchain {
   display: inline-flex;
@@ -222,7 +222,7 @@ $border-radius: 4px;
   display: inline-flex;
   background-color: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(3px);
-  padding: 6px;
+  padding: 7px;
   border-radius: 4px;
   position: absolute;
 
