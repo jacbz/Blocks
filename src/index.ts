@@ -79,7 +79,6 @@ function stop() {
 // play button
 const btn = document.getElementById('play-button') as HTMLButtonElement;
 btn.addEventListener('click', () => {
-  console.log(blockManager);
   if (isPlaying) {
     stop();
     btn.innerText = 'Play';

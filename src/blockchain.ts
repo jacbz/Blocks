@@ -36,7 +36,7 @@ class BlockChain implements IBlockObject {
     return this._currentStep;
   }
 
-  private _muted: boolean;
+  private _muted: boolean = false;
 
   get muted() {
     return this._muted;
@@ -44,6 +44,10 @@ class BlockChain implements IBlockObject {
 
   set muted(muted: boolean) {
     this._muted = muted;
+    this.element.querySelector('#bc-mute-button').classList.toggle('muted', muted);
+    this._blocks.forEach((b) => {
+      b.muted = muted;
+    });
   }
 
   set currentStep(currentStep: number) {
@@ -102,6 +106,7 @@ class BlockChain implements IBlockObject {
 
   addBlock(block: Block) {
     this.blocks.push(block);
+    this.muted = block.muted;
     const blocksElement = this.element.querySelector('.blocks');
     blocksElement.insertBefore(block.element, blocksElement.querySelector('#interpolate'));
     this.render();
@@ -135,18 +140,6 @@ class BlockChain implements IBlockObject {
     }
   }
 
-  toggleMute() {
-    if (this._interpolatedBlock && this._muted) {
-      return;
-    }
-    this.element.querySelector('#bc-mute-button').classList.toggle('muted');
-    this._muted = !this.muted;
-    for (const block of this._blocks) {
-      block.muted = this._muted;
-      block.element.querySelector('.grid').classList.toggle('muted', this._muted);
-    }
-  }
-
   adjustZIndex() {
     for (let i = 0; i < this.length; i += 1) {
       this._blocks[i].element.style.zIndex = `${this.length - i}`;
@@ -168,9 +161,6 @@ class BlockChain implements IBlockObject {
 
     AppWorker.generateInterpolatedSamples(this.first.noteSequence, this.last.noteSequence).then(
       (interpolatedSamples) => {
-        if (!this.muted) {
-          this.toggleMute();
-        }
         this._interpolatedBlock = block;
         this._interpolatedSamples = interpolatedSamples;
         block.noteSequence = interpolatedSamples[slider.valueAsNumber];
@@ -185,9 +175,6 @@ class BlockChain implements IBlockObject {
     const interpolateElement = this.element.querySelector('#interpolate');
     interpolateElement.classList.remove('open');
     interpolateElement.querySelectorAll('.block').forEach((block) => block.remove());
-    if (this._muted) {
-      this.toggleMute();
-    }
   }
 }
 

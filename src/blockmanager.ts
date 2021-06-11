@@ -105,8 +105,7 @@ class BlockManager {
 
     const muteButton = blockElement.querySelector('#mute-button');
     muteButton.addEventListener('click', () => {
-      muteButton.classList.toggle('muted');
-      block.toggleMute();
+      block.muted = !block.muted;
     });
 
     const magicButton = blockElement.querySelector('#magic-button');
@@ -157,7 +156,7 @@ class BlockManager {
 
     const muteButton = blockChainElement.querySelector('#bc-mute-button');
     muteButton.addEventListener('click', () => {
-      blockchain.toggleMute();
+      blockchain.muted = !blockchain.muted;
     });
 
     const deleteButton = blockChainElement.querySelector('#bc-delete-button');

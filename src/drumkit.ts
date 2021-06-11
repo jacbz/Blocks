@@ -24,7 +24,7 @@ class SynthDrumKit implements IDrumKit {
         sustain: 0.1,
         release: 0.4
       },
-      volume: 0
+      volume: -3
     }).toDestination();
 
     const closedHihat = new Tone.MetalSynth({

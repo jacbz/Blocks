@@ -48,7 +48,7 @@ class Block implements IBlockObject {
     this._currentStep = currentStep ? currentStep % Constants.TOTAL_STEPS : currentStep;
   }
 
-  private _muted: boolean;
+  private _muted: boolean = false;
 
   get muted() {
     return this._muted;
@@ -56,6 +56,8 @@ class Block implements IBlockObject {
 
   set muted(muted: boolean) {
     this._muted = muted;
+    this.element.querySelector('#mute-button').classList.toggle('muted', muted);
+    this.element.querySelector('.grid').classList.toggle('muted', muted);
   }
 
   private _isWorking: boolean = true;
@@ -170,9 +172,6 @@ class Block implements IBlockObject {
     } else {
       this.addNote(pitch, step);
     }
-    this._noteSequence.notes = this._noteSequence.notes.filter(
-      (n) => !Number.isNaN(n.quantizedStartStep) && !Number.isNaN(n.quantizedEndStep)
-    );
     this.render();
   }
 
@@ -208,11 +207,6 @@ class Block implements IBlockObject {
   // invert, since lower pitch means higher index, e.g. 36 -> 6
   static pitchToRowIndex(pitch: number) {
     return Constants.DRUM_PITCHES.length - Constants.DRUM_PITCHES.indexOf(pitch) - 1;
-  }
-
-  toggleMute() {
-    this._muted = !this._muted;
-    this.element.querySelector('.grid').classList.toggle('muted');
   }
 
   doMagic() {
