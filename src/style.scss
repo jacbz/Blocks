@@ -276,16 +276,15 @@ $dropzone-border: 4px;
   }
 }
 
-$cell-spacing: 1.6px;
+$cell-border: 1.6px solid rgb(30, 30, 30);
 .grid {
   width: $grid-width;
   height: $grid-height;
   display: flex;
   flex-flow: column;
   margin-right: 6px;
-  padding-top: $cell-spacing;
-  padding-left: $cell-spacing;
-  background: rgb(30, 30, 30);
+  border-top: $cell-border;
+  border-left: $cell-border;
 
   &.muted {
     opacity: 0.5;
@@ -323,8 +322,8 @@ $cell-spacing: 1.6px;
 $cell-color: rgb(52, 52, 52);
 $active-color: rgb(112, 153, 148);
 .cell {
-  margin-right: $cell-spacing;
-  margin-bottom: $cell-spacing;
+  border-right: $cell-border;
+  border-bottom: $cell-border;
   background: $cell-color;
   flex: 1;
   cursor: pointer;
