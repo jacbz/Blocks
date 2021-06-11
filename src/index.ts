@@ -54,7 +54,7 @@ playButton.addEventListener('click', () => {
 function adjustTempoLabelPosition() {
   const sliderWidth = 180;
   const knobWidth = 18;
-  const tempoDisplayWidth = 66;
+  const tempoDisplayWidth = 62;
   tempoDisplay.style.left = `${
     ((sliderWidth - knobWidth) / (Constants.MAX_BPM - Constants.MIN_BPM)) *
       (tempoSlider.valueAsNumber - Constants.MIN_BPM) -

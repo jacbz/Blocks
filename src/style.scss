@@ -5,10 +5,10 @@ $fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
 @import '@fortawesome/fontawesome-free/scss/solid';
 @import '@fortawesome/fontawesome-free/scss/regular';
 @import '@fortawesome/fontawesome-free/scss/brands';
-@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Montserrat&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Rubik:wght@300;400&display=swap');
 
 $title-font: 'Monoton', sans-serif;
-$body-font: 'Montserrat', 'Segoe UI', sans-serif;
+$body-font: 'Rubik', 'Segoe UI', sans-serif;
 $background-gradient: linear-gradient(to right, #b82151, #1d2671);
 $container-background: rgba(0, 0, 0, 0.25);
 $blockchain-background: rgba(255, 255, 255, 0.2);
@@ -18,10 +18,11 @@ $dropzone-active-background: rgba(255, 255, 255, 0.3);
 $droppable-background: rgba(0, 0, 0, 0.15);
 $presets-background: rgba(0, 0, 0, 0.1);
 $button-background: rgba(0, 0, 0, 0.1);
-$switch-background: rgba(0, 0, 0, 0.35);
+$switch-background: rgba(255, 255, 255, 0.25);
 
 * {
   font-family: $body-font;
+  font-weight: 300;
   color: white;
 }
 
@@ -79,7 +80,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: auto;
+    margin-top: 6px;
     margin-bottom: auto;
 
     #tempo-display {
@@ -87,7 +88,7 @@ body {
       transition: background 0.2s;
       line-height: 26px;
       border-radius: 2px;
-      width: 66px;
+      width: 62px;
       text-align: center;
       position: relative;
 
@@ -154,7 +155,7 @@ $grid-height: 120px;
       #presets-header {
         align-self: center;
         padding: 4px;
-        font-weight: bold;
+        font-size: 125%;
       }
 
       .block {
@@ -299,7 +300,7 @@ $border-radius: 4px;
   .block-name {
     position: absolute;
     margin: 4px;
-    font-size: 80%;
+    font-size: 85%;
   }
 }
 
@@ -497,6 +498,10 @@ footer {
 
   span {
     color: lightgray;
+  }
+
+  a {
+    font-weight: 400;
   }
 }
 
