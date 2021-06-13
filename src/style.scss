@@ -88,7 +88,7 @@ body {
       transition: background 0.2s;
       line-height: 26px;
       border-radius: 2px;
-      width: 62px;
+      padding: 4px 5px;
       text-align: center;
       position: relative;
 
@@ -108,12 +108,12 @@ body {
   }
 }
 
-.centered {
-  flex: 1;
-  margin: 16px 30px 16px 30px;
-}
-
-#loading {
+#loading {  
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -126,9 +126,12 @@ body {
 $grid-width: 320px;
 $grid-height: 120px;
 #contents {
+  flex: 1;
+  margin: 16px 30px 16px 30px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: opacity 0.2s;
 
   #container {
     background: $container-background;

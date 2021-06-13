@@ -7,15 +7,15 @@
 </head>
 
 <body>
-  <div class="centered" id="loading">
+  <div id="loading">
     <span id="loading-text">Loading...</span>
   </div>
-  <div class="centered" id="contents" style="display: none">    
+  <div id="contents" style="display: hidden; opacity: 0;">    
     <div id="toolbar">
       <div id="header">BLOCKS</div>
       <button id="play-button"></button>
       <div id="tempo-container">
-        <div id="tempo-display"><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></div>
+        <div><span id="tempo-display"><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span></div>
         <input type="range" class="slider" id="volume" style="width: 180px">
       </div>
       <div id="switch-container">

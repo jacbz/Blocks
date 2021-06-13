@@ -33,6 +33,7 @@ function initStartingBlocks() {
 function finishLoading() {
   document.getElementById('loading').remove();
   document.getElementById('contents').style.display = null;
+  document.getElementById('contents').style.opacity = '1';
   blockManager.initPresets();
 }
 
@@ -52,9 +53,9 @@ playButton.addEventListener('click', () => {
 });
 
 function adjustTempoLabelPosition() {
-  const sliderWidth = 180;
+  const sliderWidth = tempoSlider.offsetWidth;
   const knobWidth = 18;
-  const tempoDisplayWidth = 62;
+  const tempoDisplayWidth = tempoDisplay.offsetWidth;
   tempoDisplay.style.left = `${
     ((sliderWidth - knobWidth) / (Constants.MAX_BPM - Constants.MIN_BPM)) *
       (tempoSlider.valueAsNumber - Constants.MIN_BPM) -
