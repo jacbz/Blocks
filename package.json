@@ -1,10 +1,14 @@
 {
   "name": "blocks",
   "version": "0.0.1",
-  "private": true,
   "description": "TBD",
   "author": "Jacob Zhang",
+  "license": "Apache-2.0",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacbz/Blocks.git"
+  }
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "serve": "webpack serve --open --config webpack.dev.js"
