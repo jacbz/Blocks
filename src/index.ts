@@ -17,16 +17,8 @@ init();
 function init() {
   AppWorker.load().then((finishedLoading) => {
     if (finishedLoading) {
-      initStartingBlocks();
+      finishLoading();
     }
-  });
-}
-
-function initStartingBlocks() {
-  AppWorker.generateSamples(1).then((samples) => {
-    const block = blockManager.createBlock(samples[0]);
-    block.setPosition(256, 256);
-    finishLoading();
   });
 }
 
