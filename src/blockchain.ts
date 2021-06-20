@@ -58,26 +58,30 @@ class Blockchain implements IBlockObject {
     this._blocks.forEach((b) => {
       b.currentStep = undefined;
     });
-    if (!currentStep) {
+    if (this.interpolatedBlock) {
+      this.interpolatedBlock.currentStep = undefined;
+    }
+    if (currentStep === undefined) {
       this._currentStep = undefined;
       this._currentPlayingBlock = 0;
+      this._switchToNextBlock = false;
       return;
     }
 
     this._currentStep = currentStep % Constants.TOTAL_STEPS;
+    if (this._currentPlayingBlock >= this._blocks.length) {
+      this._switchToNextBlock = false;
+      this._currentPlayingBlock = 0;
+    } else if (this._switchToNextBlock) {
+      this._switchToNextBlock = false;
+      this._currentPlayingBlock = (this._currentPlayingBlock + 1) % this._blocks.length;
+    } else if (this._currentStep === Constants.TOTAL_STEPS - 1) {
+      this._switchToNextBlock = true;
+    }
 
     if (this.interpolatedBlock) {
       this.interpolatedBlock.currentStep = this._currentStep;
     } else {
-      if (this._currentPlayingBlock >= this._blocks.length) {
-        this._switchToNextBlock = false;
-        this._currentPlayingBlock = 0;
-      } else if (this._switchToNextBlock) {
-        this._switchToNextBlock = false;
-        this._currentPlayingBlock = (this._currentPlayingBlock + 1) % this._blocks.length;
-      } else if (this._currentStep === Constants.TOTAL_STEPS - 1) {
-        this._switchToNextBlock = true;
-      }
       this._blocks[this._currentPlayingBlock].currentStep = this._currentStep;
     }
   }
