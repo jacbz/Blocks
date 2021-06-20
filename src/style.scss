@@ -91,6 +91,7 @@ body {
       padding: 4px 5px;
       text-align: center;
       position: relative;
+      user-select: none;
 
       &.active {        
         background: $blockchain-background;
@@ -104,7 +105,11 @@ body {
     margin-left: auto;
     margin-top: auto;
     align-items: center;
-    gap: 8px;      
+    gap: 8px;
+
+    span {      
+      user-select: none;
+    }
   }
 }
 
@@ -159,6 +164,7 @@ $grid-height: 120px;
         align-self: center;
         padding: 4px;
         font-size: 125%;
+        user-select: none;
       }
 
       .block {
@@ -312,6 +318,7 @@ $border-radius: 4px;
     background: rgba(0,0,0,0.6);
     padding: 3px 5px;
     border-radius: 4px;
+    user-select: none;
   }
 }
 

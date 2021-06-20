@@ -50,23 +50,35 @@ class Blockchain implements IBlockObject {
     });
   }
 
+  private _switchToNextBlock = false;
+
+  private _currentPlayingBlock: number = 0;
+
   set currentStep(currentStep: number) {
-    this._currentStep = currentStep
-      ? currentStep % (this.blocks.length * Constants.TOTAL_STEPS)
-      : currentStep;
-    if (this._interpolatedBlock) {
-      this._interpolatedBlock.currentStep = this.currentStep % Constants.TOTAL_STEPS;
-      this.blocks.forEach((b) => {
-        b.currentStep = null;
-      });
+    this._blocks.forEach((b) => {
+      b.currentStep = undefined;
+    });
+    if (!currentStep) {
+      this._currentStep = undefined;
+      this._currentPlayingBlock = 0;
+      return;
+    }
+
+    this._currentStep = currentStep % Constants.TOTAL_STEPS;
+
+    if (this.interpolatedBlock) {
+      this.interpolatedBlock.currentStep = this._currentStep;
     } else {
-      for (let i = 0; i < this._blocks.length; i += 1) {
-        const block = this._blocks[i];
-        block.currentStep =
-          i === Math.floor(this._currentStep / Constants.TOTAL_STEPS)
-            ? this.currentStep % Constants.TOTAL_STEPS
-            : null;
+      if (this._currentPlayingBlock >= this._blocks.length) {
+        this._switchToNextBlock = false;
+        this._currentPlayingBlock = 0;
+      } else if (this._switchToNextBlock) {
+        this._switchToNextBlock = false;
+        this._currentPlayingBlock = (this._currentPlayingBlock + 1) % this._blocks.length;
+      } else if (this._currentStep === Constants.TOTAL_STEPS - 1) {
+        this._switchToNextBlock = true;
       }
+      this._blocks[this._currentPlayingBlock].currentStep = this._currentStep;
     }
   }
 
@@ -104,8 +116,7 @@ class Blockchain implements IBlockObject {
     if (this._muted) {
       return [];
     }
-    const playingBlock = Math.floor(this._currentStep / Constants.TOTAL_STEPS);
-    return this._blocks[playingBlock].getPitchesToPlay();
+    return this._blocks[this._currentPlayingBlock].getPitchesToPlay();
   }
 
   addBlock(block: Block) {
