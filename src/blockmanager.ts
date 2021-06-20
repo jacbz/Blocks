@@ -139,7 +139,7 @@ class BlockManager {
     const numberOfGeneratedBlocks = 2;
     const generatedBlocks: Block[] = [];
     for (let i = 0; i < numberOfGeneratedBlocks; i += 1) {
-      const block = this.initTemplateBlock(`✨ Generated ${i + 1}`, Block.defaultNoteSequence());
+      const block = this.initTemplateBlock(`✨ Generated`, Block.defaultNoteSequence());
       block.isWorking = true;
       block.render();
       generatedBlocks.push(block);
@@ -298,6 +298,16 @@ class BlockManager {
       clonedBlock.setPosition(blockRect.x - containerRect.x, blockRect.y - containerRect.y);
     }
     this._containerElement.appendChild(clonedBlock.element);
+
+    // if template block was a generated block, generate a new one
+    if (templateBlock.name.includes('Generated')) {
+      templateBlock.isWorking = true;
+      templateBlock.render();
+      AppWorker.generateSamples(1).then((samples) => {
+        [templateBlock.noteSequence] = samples;
+        templateBlock.render();
+      });
+    }
     return clonedBlock;
   }
 
