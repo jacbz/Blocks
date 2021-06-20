@@ -213,15 +213,6 @@ class Block implements IBlockObject {
   static pitchToRowIndex(pitch: number) {
     return Constants.DRUM_PITCHES.length - Constants.DRUM_PITCHES.indexOf(pitch) - 1;
   }
-
-  continue() {
-    this.isWorking = true;
-
-    AppWorker.continueSequence(this._noteSequence).then((noteSequence) => {
-      this.noteSequence = noteSequence;
-      this.render();
-    });
-  }
 }
 
 export default Block;

@@ -194,7 +194,8 @@ class BlockManager {
 
     const continueButton = blockElement.querySelector('#continue-button');
     continueButton.addEventListener('click', () => {
-      block.continue();
+      const blockchain = this.initBlockchainDom(block);
+      blockchain.continue(this);
     });
 
     const deleteButton = blockElement.querySelector('#delete-button');
@@ -236,6 +237,11 @@ class BlockManager {
     const muteButton = blockChainElement.querySelector('#bc-mute-button');
     muteButton.addEventListener('click', () => {
       blockchain.muted = !blockchain.muted;
+    });
+
+    const continueButton = blockChainElement.querySelector('#bc-continue-button');
+    continueButton.addEventListener('click', () => {
+      blockchain.continue(this);
     });
 
     const deleteButton = blockChainElement.querySelector('#bc-delete-button');

@@ -475,7 +475,8 @@ $muted-color: red;
   }
 }
 
-#continue-button {
+#continue-button,
+#bc-continue-button {
   @extend %fa-icon;
   @extend .fas;
   &:before {

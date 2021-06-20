@@ -188,12 +188,41 @@ class Blockchain implements IBlockObject {
   }
 
   setToggleNoteInterpolationTimer() {
+    if (!this._interpolatedBlock) {
+      window.clearTimeout(this._toggleNoteInterpolationTimerId);
+      return;
+    }
     if (this._toggleNoteInterpolationTimerId) {
       window.clearTimeout(this._toggleNoteInterpolationTimerId);
     }
     this._toggleNoteInterpolationTimerId = window.setTimeout(() => {
       this.interpolate(this.interpolatedBlock);
     }, 400);
+  }
+
+  continue(blockmanager: BlockManager) {
+    // add a working empty block
+    const block = new Block(blockmanager.nextId(), blockmanager);
+    block.noteSequence = Block.defaultNoteSequence();
+    block.init();
+    block.isWorking = true;
+
+    const noteSequenceConsolidated = Block.defaultNoteSequence();
+    this._blocks.forEach((b, i) => {
+      b.noteSequence.notes.forEach((n) => {
+        const note = { ...n };
+        note.quantizedStartStep += i * Constants.TOTAL_STEPS;
+        note.quantizedEndStep += i * Constants.TOTAL_STEPS;
+        noteSequenceConsolidated.notes.push(note);
+      });
+    });
+    noteSequenceConsolidated.totalQuantizedSteps = this._blocks.length * Constants.TOTAL_STEPS;
+
+    this.addBlock(block);
+    AppWorker.continueSequence(noteSequenceConsolidated).then((noteSequence) => {
+      block.noteSequence = noteSequence;
+      this.render();
+    });
   }
 }
 
