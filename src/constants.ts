@@ -23,11 +23,7 @@ export const DRUM_NAMES = [
 export const TEMPERATURE = 1.1;
 
 // some of these are adapted from https://www.onlinedrummer.com/
-export const PRESETS = [
-  {
-    name: 'Empty',
-    notes: []
-  },
+export const PRESET_BLOCKS = [
   {
     name: 'Standard',
     notes: [

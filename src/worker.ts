@@ -81,7 +81,12 @@ context.onmessage = async ({ data }) => {
   }
 
   if (data.numberOfSamples) {
-    const samples = await drumsVae.sample(data.numberOfSamples, Constants.TEMPERATURE);
+    const samplePromises = [];
+    // generate separately to ensure that the samples are more varied
+    for (let i = 0; i < data.numberOfSamples; i += 1) {
+      samplePromises.push(drumsVae.sample(1, Constants.TEMPERATURE));
+    }
+    const samples = (await Promise.all(samplePromises)).map((s) => s[0]);
     context.postMessage({ samples });
     return;
   }

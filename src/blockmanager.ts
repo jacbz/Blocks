@@ -6,6 +6,7 @@ import Blockchain from './blockchain';
 import IBlockObject from './iblockobject';
 import * as Constants from './constants';
 import { PlayerDrumKit, SynthDrumKit, IDrumKit } from './drumkit';
+import AppWorker from './worker';
 
 class BlockManager {
   private _synthDrumKit = new SynthDrumKit();
@@ -34,7 +35,7 @@ class BlockManager {
 
   private _blockObjects: IBlockObject[] = [];
 
-  private _presetBlocks: Block[] = [];
+  private _templateBlocks: Block[] = [];
 
   private _hoveredCellElement: HTMLElement;
 
@@ -106,7 +107,7 @@ class BlockManager {
         }
         return arr;
       },
-      [...this._presetBlocks]
+      [...this._templateBlocks]
     );
   }
 
@@ -130,20 +131,44 @@ class BlockManager {
     return blocks.length > 0 ? Math.max(...blocks.map((b) => b.id)) + 1 : 0;
   }
 
-  initPresets() {
-    // presets
-    const presetContainer = document.getElementById('presets');
+  initTemplates() {
+    // add empty block
+    this.initTemplateBlock('Empty', Block.defaultNoteSequence());
 
-    for (const preset of Constants.PRESETS) {
-      const block = new Block(this.nextId(), this);
-      block.noteSequence = Block.defaultNoteSequence();
-      block.noteSequence.notes = preset.notes;
-      block.name = preset.name;
-      this._presetBlocks.push(block);
-
-      presetContainer.appendChild(block.element);
-      block.init();
+    // add generated blocks
+    const numberOfGeneratedBlocks = 2;
+    const generatedBlocks: Block[] = [];
+    for (let i = 0; i < numberOfGeneratedBlocks; i += 1) {
+      const block = this.initTemplateBlock(`✨ Generated ${i + 1}`, Block.defaultNoteSequence());
+      block.isWorking = true;
+      block.render();
+      generatedBlocks.push(block);
     }
+
+    AppWorker.generateSamples(numberOfGeneratedBlocks).then((samples) => {
+      samples.forEach((sample, i) => {
+        generatedBlocks[i].noteSequence = sample;
+        generatedBlocks[i].render();
+      });
+    });
+
+    // add preset blocks
+    for (const template of Constants.PRESET_BLOCKS) {
+      this.initTemplateBlock(template.name, Block.defaultNoteSequence(), template.notes);
+    }
+  }
+
+  initTemplateBlock(name: string, noteSequence: INoteSequence, notes: any[] = []) {
+    const templateContainer = document.getElementById('templates');
+    const block = new Block(this.nextId(), this);
+    block.noteSequence = noteSequence;
+    block.noteSequence.notes = notes;
+    block.name = name;
+    this._templateBlocks.push(block);
+
+    templateContainer.appendChild(block.element);
+    block.init();
+    return block;
   }
 
   createBlockDom(block: Block) {
@@ -165,11 +190,6 @@ class BlockManager {
     const muteButton = blockElement.querySelector('#mute-button');
     muteButton.addEventListener('click', () => {
       block.muted = !block.muted;
-    });
-
-    const magicButton = blockElement.querySelector('#magic-button');
-    magicButton.addEventListener('click', () => {
-      block.doMagic();
     });
 
     const continueButton = blockElement.querySelector('#continue-button');
@@ -245,8 +265,8 @@ class BlockManager {
   chainBlock(block1: Block, block2: Block) {
     if (block1 === block2) return;
 
-    if (this._presetBlocks.indexOf(block2) !== -1) {
-      block2 = this.convertPresetBlock(block2, false);
+    if (this._templateBlocks.indexOf(block2) !== -1) {
+      block2 = this.convertTemplateBlock(block2, false);
     }
 
     const blockChain1 = this.getBlockchainOfBlock(block1);
@@ -268,13 +288,13 @@ class BlockManager {
     }
   }
 
-  // makes a preset block into an actual block, without destroying it
-  convertPresetBlock(presetBlock: Block, reposition = true) {
-    const clonedBlock = presetBlock.clone(this);
+  // makes a template block into an actual block, without destroying it
+  convertTemplateBlock(templateBlock: Block, reposition = true) {
+    const clonedBlock = templateBlock.clone(this);
     this._blockObjects.push(clonedBlock);
     if (reposition) {
       const containerRect = this._containerElement.getBoundingClientRect();
-      const blockRect = presetBlock.element.getBoundingClientRect();
+      const blockRect = templateBlock.element.getBoundingClientRect();
       clonedBlock.setPosition(blockRect.x - containerRect.x, blockRect.y - containerRect.y);
     }
     this._containerElement.appendChild(clonedBlock.element);
@@ -353,8 +373,8 @@ class BlockManager {
         end(event) {
           const { target } = event;
           target.removeAttribute('drag');
-          // reset position if element was in blockchain or preset
-          if (target.matches('.blockchain .block, #presets .block')) {
+          // reset position if element was in blockchain or template
+          if (target.matches('.blockchain .block, #templates .block')) {
             target.style.left = null;
             target.style.top = null;
           }
@@ -412,7 +432,7 @@ class BlockManager {
     });
 
     interact('#container').dropzone({
-      accept: '.blockchain .block, #presets .block',
+      accept: '.blockchain .block, #templates .block',
       overlap: 'pointer',
       checker: (
         dragEvent,
@@ -423,13 +443,13 @@ class BlockManager {
         draggable,
         draggableElement
       ) => {
-        // don't trigger drop if dropped within blockchain / interpolation / presets panel
+        // don't trigger drop if dropped within blockchain / interpolation / templates panel
         let parent = '.blockchain';
         if (draggableElement.closest('#interpolate')) {
           parent = '#interpolate';
         }
-        if (draggableElement.closest('#presets')) {
-          parent = '#presets';
+        if (draggableElement.closest('#templates')) {
+          parent = '#templates';
         }
         const closestRect = draggableElement.closest(parent).getBoundingClientRect();
         const mouseIsInsideBlockchain =
@@ -445,8 +465,8 @@ class BlockManager {
       ondrop(event) {
         const blockElement = event.relatedTarget;
         const block = blockManager.getBlockById(parseInt(blockElement.id, 10));
-        if (blockManager._presetBlocks.indexOf(block) !== -1) {
-          blockManager.convertPresetBlock(block);
+        if (blockManager._templateBlocks.indexOf(block) !== -1) {
+          blockManager.convertTemplateBlock(block);
         } else {
           blockManager.releaseBlock(block);
         }

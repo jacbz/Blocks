@@ -16,7 +16,7 @@ $block-background: rgba(0, 0, 0, 0.35);
 $dropzone-background: rgba(0, 0, 0, 0.4);
 $dropzone-active-background: rgba(255, 255, 255, 0.3);
 $droppable-background: rgba(0, 0, 0, 0.15);
-$presets-background: rgba(0, 0, 0, 0.1);
+$templates-background: rgba(0, 0, 0, 0.1);
 $button-background: rgba(0, 0, 0, 0.1);
 $switch-background: rgba(255, 255, 255, 0.25);
 
@@ -145,9 +145,9 @@ $grid-height: 120px;
       background: $droppable-background;
     }
 
-    #presets {
+    #templates {
       position: absolute;
-      background: $presets-background;
+      background: $templates-background;
       height: 100%;
       right: 0;
       display: flex;
@@ -155,7 +155,7 @@ $grid-height: 120px;
       padding: 6px;
       gap: 8px;
 
-      #presets-header {
+      #templates-header {
         align-self: center;
         padding: 4px;
         font-size: 125%;
@@ -164,12 +164,16 @@ $grid-height: 120px;
       .block {
         position: relative;
         padding: 3px;
+
+        .block-name {
+          visibility: visible;
+        }
       }
 
       .grid {
         pointer-events: none;
-        width: $grid-width * 0.6;
-        height: $grid-height * 0.6;
+        width: $grid-width * 0.55;
+        height: $grid-height * 0.55;
         margin: 0;
       }
 
@@ -301,9 +305,13 @@ $border-radius: 4px;
   position: absolute;
 
   .block-name {
+    visibility: hidden;
     position: absolute;
     margin: 4px;
     font-size: 85%;
+    background: rgba(0,0,0,0.6);
+    padding: 3px 5px;
+    border-radius: 4px;
   }
 }
 
@@ -464,14 +472,6 @@ $muted-color: red;
       content: fa-content($fa-var-volume-mute);
       color: $muted-color;
     }
-  }
-}
-
-#magic-button {
-  @extend %fa-icon;
-  @extend .fas;
-  &:before {
-    content: fa-content($fa-var-magic);
   }
 }
 

@@ -34,7 +34,7 @@ function finishLoading() {
   document.getElementById('loading').remove();
   document.getElementById('contents').style.display = null;
   document.getElementById('contents').style.opacity = '1';
-  blockManager.initPresets();
+  blockManager.initTemplates();
 }
 
 // play button

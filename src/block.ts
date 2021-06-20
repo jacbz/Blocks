@@ -163,7 +163,8 @@ class Block implements IBlockObject {
       quantizationInfo: {
         stepsPerQuarter: Constants.STEPS_PER_QUARTER
       },
-      totalQuantizedSteps: Constants.TOTAL_STEPS
+      totalQuantizedSteps: Constants.TOTAL_STEPS,
+      notes: []
     });
   }
 
@@ -211,15 +212,6 @@ class Block implements IBlockObject {
   // invert, since lower pitch means higher index, e.g. 36 -> 6
   static pitchToRowIndex(pitch: number) {
     return Constants.DRUM_PITCHES.length - Constants.DRUM_PITCHES.indexOf(pitch) - 1;
-  }
-
-  doMagic() {
-    this.isWorking = true;
-
-    AppWorker.generateSamples(1).then((samples) => {
-      [this.noteSequence] = samples;
-      this.render();
-    });
   }
 
   continue() {
