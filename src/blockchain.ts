@@ -48,6 +48,9 @@ class Blockchain implements IBlockObject {
     this._blocks.forEach((b) => {
       b.muted = muted;
     });
+    if (this.interpolatedBlock) {
+      this.interpolatedBlock.muted = muted;
+    }
   }
 
   private _switchToNextBlock = false;
@@ -114,11 +117,11 @@ class Blockchain implements IBlockObject {
   }
 
   getPitchesToPlay(): number[] {
-    if (this._interpolatedBlock) {
-      return this._interpolatedBlock.getPitchesToPlay();
-    }
     if (this._muted) {
       return [];
+    }
+    if (this._interpolatedBlock) {
+      return this._interpolatedBlock.getPitchesToPlay();
     }
     return this._blocks[this._currentPlayingBlock].getPitchesToPlay();
   }
@@ -238,6 +241,10 @@ class Blockchain implements IBlockObject {
       block.noteSequence = noteSequence;
       this.render();
     });
+
+    if (this._interpolatedBlock) {
+      this.stopInterpolation();
+    }
   }
 }
 

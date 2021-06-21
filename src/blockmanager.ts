@@ -139,7 +139,7 @@ class BlockManager {
     const numberOfGeneratedBlocks = 2;
     const generatedBlocks: Block[] = [];
     for (let i = 0; i < numberOfGeneratedBlocks; i += 1) {
-      const block = this.initTemplateBlock('✨ Generated', Block.defaultNoteSequence());
+      const block = this.initTemplateBlock('✨ ML-Generated', Block.defaultNoteSequence());
       block.isWorking = true;
       block.render();
       generatedBlocks.push(block);
