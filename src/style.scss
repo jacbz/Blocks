@@ -19,6 +19,8 @@ $droppable-background: rgba(0, 0, 0, 0.15);
 $templates-background: rgba(0, 0, 0, 0.1);
 $button-background: rgba(0, 0, 0, 0.1);
 $switch-background: rgba(255, 255, 255, 0.25);
+$block-cell-border: 1.6px solid rgb(30, 30, 30);
+$template-block-cell-border: 1.2px solid rgb(30, 30, 30);
 
 * {
   font-family: $body-font;
@@ -158,7 +160,7 @@ $grid-height: 120px;
       display: flex;
       flex-direction: column;
       padding: 6px;
-      gap: 8px;
+      gap: 6px;
 
       #templates-header {
         align-self: center;
@@ -178,10 +180,18 @@ $grid-height: 120px;
 
       .grid {
         pointer-events: none;
-        width: $grid-width * 0.55;
-        height: $grid-height * 0.55;
+        width: $grid-width * 0.475;
+        height: $grid-height * 0.475;
         margin: 0;
+        border-top: $template-block-cell-border;
+        border-left: $template-block-cell-border;
+
+        .cell {
+          border-right: $template-block-cell-border;
+          border-bottom: $template-block-cell-border;          
+        }
       }
+
 
       .block-actions {
         display: none;
@@ -365,15 +375,14 @@ $dropzone-border: 4px;
   }
 }
 
-$cell-border: 1.6px solid rgb(30, 30, 30);
 .grid {
   width: $grid-width;
   height: $grid-height;
   display: flex;
   flex-flow: column;
   margin-right: 6px;
-  border-top: $cell-border;
-  border-left: $cell-border;
+  border-top: $block-cell-border;
+  border-left: $block-cell-border;
 
   &.muted {
     opacity: 0.5;
@@ -411,8 +420,8 @@ $cell-border: 1.6px solid rgb(30, 30, 30);
 $cell-color: rgb(52, 52, 52);
 $active-color: rgb(112, 153, 148);
 .cell {
-  border-right: $cell-border;
-  border-bottom: $cell-border;
+  border-right: $block-cell-border;
+  border-bottom: $block-cell-border;
   background: $cell-color;
   flex: 1;
   cursor: pointer;
