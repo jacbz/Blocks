@@ -28,7 +28,7 @@ module.exports = {
     ]
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: 'src/index.html' }),
+    new HtmlWebpackPlugin({ template: 'src/index.html', favicon: 'assets/favicon.ico' }),
     new MiniCssExtractPlugin(),
     new CopyWebpackPlugin({
       patterns: [{ from: 'assets' }]

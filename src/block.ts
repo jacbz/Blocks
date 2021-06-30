@@ -2,7 +2,6 @@ import { INoteSequence, NoteSequence } from '@magenta/music/es6/protobuf';
 import BlockManager from './blockmanager';
 import * as Constants from './constants';
 import IBlockObject from './iblockobject';
-import AppWorker from './worker';
 
 class Block implements IBlockObject {
   private _id: number;
