@@ -101,11 +101,20 @@ context.onmessage = async ({ data }) => {
   }
 
   if (data.sequencesToInterpolate) {
+    if (data.sequencesToInterpolate.length !== 2) {
+      throw new Error('Interpolation must have two sequences as input');
+    }
     const interpolatedSequences = await drumsVae.interpolate(
       data.sequencesToInterpolate,
-      Constants.INTERPOLATION_LENGTH
+      Constants.INTERPOLATION_LENGTH - 2
     );
-    context.postMessage({ interpolatedSequences });
+    context.postMessage({
+      interpolatedSequences: [
+        data.sequencesToInterpolate[0],
+        ...interpolatedSequences,
+        data.sequencesToInterpolate[1]
+      ]
+    });
   }
 };
 
