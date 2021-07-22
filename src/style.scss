@@ -102,12 +102,43 @@ body {
   }
 
   #switch-container {
-    text-align: center;
     display: flex;
+    flex-direction: column;
     margin-left: auto;
     margin-top: auto;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
+
+    #switch-header {
+      width: 100%;
+      display: flex; 
+      font-size: 70%;
+      letter-spacing: 1.2px;
+      align-items: center;
+      text-align: center;
+
+      &::before,
+      &::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid white;
+      }
+      
+      &:not(:empty)::before {
+        margin-right: .5em;
+      }
+      
+      &:not(:empty)::after {
+        margin-left: .5em;
+      }
+    }
+
+    #switch-body {
+      display: flex;
+      flex-direction: row;
+      text-align: center;  
+      gap: 8px;    
+    }
 
     span {      
       user-select: none;
