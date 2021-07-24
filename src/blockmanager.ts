@@ -45,6 +45,8 @@ class BlockManager {
   // this is the timer for the setInterval function
   private _toggleNotePreviewSoundTimerId: number;
 
+  private _isTouch = matchMedia('(hover: none), (pointer: coarse)').matches;
+
   constructor(containerElement: HTMLDivElement) {
     this._containerElement = containerElement;
     this._blockObjects = [];
@@ -133,7 +135,9 @@ class BlockManager {
 
   initTemplates() {
     // add empty block
-    this.initTemplateBlock('Empty', Block.defaultNoteSequence());
+    if (!this._isTouch) {
+      this.initTemplateBlock('Empty', Block.defaultNoteSequence());
+    }
 
     // add generated blocks
     const numberOfGeneratedBlocks = 2;
@@ -359,7 +363,7 @@ class BlockManager {
 
   initInteractEvents() {
     const blockManager = this;
-    const ignoreFrom = '.grid, button, input';
+    const ignoreFrom = blockManager._isTouch ? 'button, input' : '.grid, button, input';
     // make blocks draggable
     interact('.block').draggable({
       ignoreFrom,
@@ -508,36 +512,38 @@ class BlockManager {
       }
     };
 
-    // dragging on the grid to toggle cells
-    let moved: HTMLElement[] = []; // already toggled in this interaction
-    interact('.grid')
-      .draggable({
-        listeners: {
-          start() {
-            moved = [];
-          },
-          move() {
-            if (moved.indexOf(blockManager._hoveredCellElement) >= 0) {
-              return;
-            }
-            const blockId = parseInt(blockManager._hoveredCellElement.getAttribute('block'), 10);
-            const block = blockManager.getBlockById(blockId);
-            if (block) {
-              moved.push(blockManager._hoveredCellElement);
-              toggleNote(block);
+    if (!blockManager._isTouch) {
+      // dragging on the grid to toggle cells
+      let moved: HTMLElement[] = []; // already toggled in this interaction
+      interact('.grid')
+        .draggable({
+          listeners: {
+            start() {
+              moved = [];
+            },
+            move() {
+              if (!blockManager._hoveredCellElement || moved.indexOf(blockManager._hoveredCellElement) >= 0) {
+                return;
+              }
+              const blockId = parseInt(blockManager._hoveredCellElement.getAttribute('block'), 10);
+              const block = blockManager.getBlockById(blockId);
+              if (block) {
+                moved.push(blockManager._hoveredCellElement);
+                toggleNote(block);
+              }
             }
           }
-        }
-      })
-      .styleCursor(false)
-      // clear the canvas on doubletap
-      .on('click', (event) => {
-        const blockId = parseInt(event.target.getAttribute('block'), 10);
-        const block = blockManager.getBlockById(blockId);
-        if (block) {
-          toggleNote(block);
-        }
-      });
+        })
+        .styleCursor(false)
+        // clear the canvas on doubletap
+        .on('click', (event) => {
+          const blockId = parseInt(event.target.getAttribute('block'), 10);
+          const block = blockManager.getBlockById(blockId);
+          if (block) {
+            toggleNote(block);
+          }
+        });
+    }
   }
 }
 

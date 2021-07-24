@@ -40,6 +40,7 @@ body {
 }
 
 #toolbar {
+  width: 100%;
   display: flex;
   gap: 24px;
 
@@ -60,8 +61,8 @@ body {
     }
     background: $container-background;
     transition: background 0.2s;
-    height: 72px;
-    width: 72px;
+    min-height: 72px;
+    min-width: 72px;
     border-radius: 50%;
     border: 0;
     margin-top: auto;
@@ -158,8 +159,8 @@ body {
   text-align: center;
 
   #loading-text {
-    width: 80vw;
-    font-size: 400%;
+    width: 85vw;
+    font-size: 300%;
   }
 }
 
@@ -172,10 +173,11 @@ $grid-height: 120px;
   flex-direction: column;
   gap: 12px;
   transition: opacity 0.2s;
+  width: calc(95vw - 40px);
 
   #container {
     background: $container-background;
-    width: calc(95vw - 40px);
+    width: 100%;
     flex: 1;
     overflow: hidden;
     position: relative;
@@ -247,6 +249,8 @@ $border-radius: 4px;
   backdrop-filter: blur(3px);
   border-radius: 4px;
   position: absolute;
+  user-select: none;
+  touch-action: none;
 
   .blocks {
     margin: 4px;
@@ -352,6 +356,8 @@ $border-radius: 4px;
   padding: 7px;
   border-radius: 4px;
   position: absolute;
+  user-select: none;
+  touch-action: none;
 
   .block-name {
     visibility: hidden;
@@ -626,5 +632,13 @@ input[type='range'] {
     -webkit-transform: translate3d(100%, 0, 0);
     -moz-transform: translate3d(100%, 0, 0);
     transform: translate3d(100%, 0, 0);
+  }
+}
+
+
+
+@media screen {
+  .grid {
+    pointer-events: none;
   }
 }

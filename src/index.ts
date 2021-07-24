@@ -13,11 +13,7 @@ const drumkitSwitch = document.getElementById('drumkit') as HTMLInputElement;
 AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
 const blockManager = new BlockManager(containerElement);
 
-if (matchMedia('(hover: none), (pointer: coarse)').matches) {
-  document.getElementById('loading-text').textContent = 'Sorry. Touchscreens are not supported.';
-} else {
-  init();
-}
+init();
 
 function init() {
   AppWorker.load().then((finishedLoading) => {
