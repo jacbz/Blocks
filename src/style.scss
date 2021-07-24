@@ -26,6 +26,7 @@ $template-block-cell-border: 1.2px solid rgb(30, 30, 30);
   font-family: $body-font;
   font-weight: 300;
   color: white;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -73,8 +74,14 @@ body {
         content: fa-content($fa-var-stop);
       }
     }
+    
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: $blockchain-background;
+      }
+    }
 
-    &:hover {
+    &:active {
       background: $blockchain-background;
     }
   }
@@ -160,7 +167,7 @@ body {
 
   #loading-text {
     width: 85vw;
-    font-size: 300%;
+    font-size: 400%;
   }
 }
 
@@ -499,8 +506,13 @@ button {
   &:focus {
     outline: none;
   }
-
-  &:hover {
+  
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border: 1px solid white;
+    }
+  }
+  &:active {
     border: 1px solid white;
   }
 
@@ -635,9 +647,7 @@ input[type='range'] {
   }
 }
 
-
-
-@media screen {
+@media (pointer:coarse) {
   .grid {
     pointer-events: none;
   }

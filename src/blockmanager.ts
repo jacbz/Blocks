@@ -363,7 +363,7 @@ class BlockManager {
 
   initInteractEvents() {
     const blockManager = this;
-    const ignoreFrom = blockManager._isTouch ? 'button, input' : '.grid, button, input';
+    const ignoreFrom = blockManager._isTouch ? '.grid, button, input' : 'button, input';
     // make blocks draggable
     interact('.block').draggable({
       ignoreFrom,
