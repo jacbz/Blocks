@@ -157,7 +157,9 @@ class Blockchain implements IBlockObject {
     } else {
       this._blocks = this.blocks.filter((b) => b !== block);
       const blocksElement = this.element.querySelector('.blocks');
-      blocksElement.removeChild(block.element);
+      if (block.element.parentElement === blocksElement) {
+        blocksElement.removeChild(block.element);
+      }
       this.adjustZIndex();
     }
   }
