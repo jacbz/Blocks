@@ -47,6 +47,17 @@ class Block implements IBlockObject {
     this._currentStep = currentStep ? currentStep % Constants.TOTAL_STEPS : currentStep;
   }
 
+  private _enlarged: boolean = false;
+
+  get enlarged() {
+    return this._enlarged;
+  }
+
+  set enlarged(enlarged: boolean) {
+    this._enlarged = enlarged;
+    this.element.classList.toggle('enlarged', enlarged);
+  }
+
   private _muted: boolean = false;
 
   get muted() {

@@ -191,6 +191,11 @@ class BlockManager {
       false
     );
 
+    const zoomButton = blockElement.querySelector('#zoom-button');
+    zoomButton.addEventListener('click', () => {
+      block.enlarged = !block.enlarged;
+    });
+
     const muteButton = blockElement.querySelector('#mute-button');
     muteButton.addEventListener('click', () => {
       block.muted = !block.muted;
@@ -230,6 +235,7 @@ class BlockManager {
     blockChainElement.style.left = `${parseFloat(block.element.style.left) - 10}px`;
     blockChainElement.style.top = `${parseFloat(block.element.style.top) - 10}px`;
     block.setPosition(null, null);
+    block.enlarged = false;
     this._containerElement.appendChild(blockChainElement);
     this._containerElement.removeChild(block.element);
 
@@ -522,7 +528,8 @@ class BlockManager {
               moved = [];
             },
             move() {
-              if (!blockManager._hoveredCellElement || moved.indexOf(blockManager._hoveredCellElement) >= 0) {
+              if (!blockManager._hoveredCellElement ||
+                  moved.indexOf(blockManager._hoveredCellElement) >= 0) {
                 return;
               }
               const blockId = parseInt(blockManager._hoveredCellElement.getAttribute('block'), 10);
@@ -535,7 +542,6 @@ class BlockManager {
           }
         })
         .styleCursor(false)
-        // clear the canvas on doubletap
         .on('click', (event) => {
           const blockId = parseInt(event.target.getAttribute('block'), 10);
           const block = blockManager.getBlockById(blockId);

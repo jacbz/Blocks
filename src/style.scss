@@ -365,6 +365,7 @@ $border-radius: 4px;
   position: absolute;
   user-select: none;
   touch-action: none;
+  transition: transform 0.2s;
 
   .block-name {
     visibility: hidden;
@@ -421,6 +422,26 @@ $dropzone-border: 4px;
   }
 }
 
+$enlarge-factor: 1.6;
+$enlarged-width: $grid-width * $enlarge-factor;
+$enlarged-height: $grid-height * $enlarge-factor;
+.enlarged {
+  transform: translateX(-($enlarged-width/2 - $grid-width/2)) translateY(-($enlarged-height/2 - $grid-height/2));
+
+  .grid {
+    width: $enlarged-width;
+    height: $enlarged-height;
+  }
+
+  #zoom-button {
+    @extend %fa-icon;
+    @extend .fas;
+    &:before {
+      content: fa-content($fa-var-compress-alt);
+    }
+  }
+}
+
 .grid {
   width: $grid-width;
   height: $grid-height;
@@ -429,6 +450,8 @@ $dropzone-border: 4px;
   margin-right: 6px;
   border-top: $block-cell-border;
   border-left: $block-cell-border;
+  transition: width 0.2s, height 0.2s;
+
 
   &.muted {
     opacity: 0.5;
@@ -548,6 +571,14 @@ $muted-color: red;
   @extend .fas;
   &:before {
     content: fa-content($fa-var-angle-double-right);
+  }
+}
+
+#zoom-button {
+  @extend %fa-icon;
+  @extend .fas;
+  &:before {
+    content: fa-content($fa-var-expand-alt);
   }
 }
 

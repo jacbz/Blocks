@@ -127,6 +127,7 @@ class Blockchain implements IBlockObject {
   }
 
   addBlock(block: Block) {
+    block.enlarged = false;
     this.blocks.push(block);
     this.muted = block.muted;
     const blocksElement = this.element.querySelector('.blocks');
