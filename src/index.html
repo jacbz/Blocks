@@ -18,15 +18,17 @@
         <div><span id="tempo-display"><span style="font-size: 125%;">♩</span> = <span id="bpm">120</span></span></div>
         <input type="range" class="slider" id="volume" style="width: 180px">
       </div>
-      <div id="switch-container" title="Switch between a synth-based sound or a sample-based sound [S]">
-        <div id="switch-header">DRUM KIT SOUND</div>
-        <div id="switch-body">
-          <span>Synth</span>
-          <label class="switch"><input type="checkbox" id="drumkit"/><div></div>
-          </label>
-          <span>Samples</span>
+      <div id="toolbar-end">
+        <button id="export-button" class="circle" title="Export current blocks as MIDI [Ctrl+S]"></button><div id="switch-container" title="Switch between a synth-based sound or a sample-based sound [S]">
+          <div id="switch-header">DRUM KIT SOUND</div>
+          <div id="switch-body">
+            <span>Synth</span>
+            <label class="switch"><input type="checkbox" id="drumkit"/><div></div>
+            </label>
+            <span>Samples</span>
+          </div>
         </div>
-      </div>    
+      </div>      
     </div>
 
     <div id="container">  

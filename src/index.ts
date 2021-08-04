@@ -8,6 +8,7 @@ const playButton = document.getElementById('play-button') as HTMLButtonElement;
 const tempoSlider = document.getElementById('volume') as HTMLInputElement;
 const tempoLabel = document.getElementById('bpm') as HTMLSpanElement;
 const tempoDisplay = document.getElementById('tempo-display') as HTMLDivElement;
+const exportButton = document.getElementById('export-button') as HTMLButtonElement;
 const drumkitSwitch = document.getElementById('drumkit') as HTMLInputElement;
 
 AppWorker.init(new Worker(new URL('./worker.ts', import.meta.url)));
@@ -80,6 +81,24 @@ tempoSlider.max = `${Constants.MAX_BPM}`;
 tempoSlider.valueAsNumber = Constants.START_BPM;
 adjustTempoLabelPosition();
 
+// export button
+exportButton.addEventListener('click', () => {
+  exportMidi();
+});
+function exportMidi() {
+  const blobUrl = blockManager.exportMidi();
+  if (!blobUrl) return;
+
+  const a = document.createElement('a');
+  document.body.appendChild(a);
+  a.setAttribute('style', 'display: none');
+  a.href = blobUrl;
+  a.download = `Blocks Export ${new Date().toISOString()}.midi`;
+  a.click();
+  URL.revokeObjectURL(blobUrl);
+  a.remove();
+}
+
 // drumkit switch
 drumkitSwitch.addEventListener('change', (event) => {
   blockManager.toggleDrumkit();
@@ -93,8 +112,12 @@ window.onkeydown = (keyDownEvent: KeyboardEvent) => {
       play();
       break;
     case 's':
-      drumkitSwitch.checked = !drumkitSwitch.checked;
-      blockManager.toggleDrumkit();
+      if (keyDownEvent.ctrlKey) {
+        exportMidi();
+      } else {
+        drumkitSwitch.checked = !drumkitSwitch.checked;
+        blockManager.toggleDrumkit();
+      }
       break;
     case 'ArrowRight':
       tempoSlider.valueAsNumber += 5;

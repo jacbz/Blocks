@@ -82,6 +82,10 @@ class Block implements IBlockObject {
     this._element = blockmanager.createBlockDom(this);
   }
 
+  getNoteSequence() {
+    return this._noteSequence;
+  }
+
   clone(blockManager: BlockManager) {
     const block = new Block(blockManager.nextId(), blockManager);
     // deep copy

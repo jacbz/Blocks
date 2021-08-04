@@ -1,4 +1,5 @@
 import { INoteSequence } from '@magenta/music/es6/protobuf';
+import { sequenceProtoToMidi } from '@magenta/music/es6';
 import * as Tone from 'tone';
 import interact from 'interactjs';
 import Block from './block';
@@ -140,20 +141,13 @@ class BlockManager {
     }
 
     // add generated blocks
-    const numberOfGeneratedBlocks = 2;
-    const generatedBlocks: Block[] = [];
-    for (let i = 0; i < numberOfGeneratedBlocks; i += 1) {
-      const block = this.initTemplateBlock('✨ ML-Generated', Block.defaultNoteSequence());
-      block.isWorking = true;
-      block.render();
-      generatedBlocks.push(block);
-    }
+    const generatedBlock = this.initTemplateBlock('✨ ML-Generated', Block.defaultNoteSequence());
+    generatedBlock.isWorking = true;
+    generatedBlock.render();
 
-    AppWorker.generateSamples(numberOfGeneratedBlocks).then((samples) => {
-      samples.forEach((sample, i) => {
-        generatedBlocks[i].noteSequence = sample;
-        generatedBlocks[i].render();
-      });
+    AppWorker.generateSamples(1).then((samples) => {
+      [generatedBlock.noteSequence] = samples;
+      generatedBlock.render();
     });
 
     // add preset blocks
@@ -365,6 +359,26 @@ class BlockManager {
     this._toggleNotePreviewSoundTimerId = window.setTimeout(() => {
       this._toggleNotePreviewSoundTimerId = null;
     }, 200);
+  }
+
+  /** Exports all blocks and returns a URL to the MIDI blob */
+  exportMidi() {
+    if (this._blockObjects.length === 0) return null;
+
+    // consolidate all blocks into one
+    const noteSequences = this._blockObjects.map((b) => b.getNoteSequence());
+    const firstNoteSequence = noteSequences.shift();
+    const consolidatedBlock = noteSequences.reduce((prev, curr) => {
+      prev.notes = [...prev.notes, ...curr.notes];
+      return prev;
+    }, firstNoteSequence);
+
+    consolidatedBlock.notes.forEach((n) => {
+      n.velocity = 100;
+    });
+    const midiBuffer = sequenceProtoToMidi(consolidatedBlock);
+    const midiBlob = new Blob([midiBuffer], { type: 'audio/midi' });
+    return URL.createObjectURL(midiBlob);
   }
 
   initInteractEvents() {

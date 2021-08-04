@@ -221,6 +221,21 @@ class Blockchain implements IBlockObject {
     }, 400);
   }
 
+  getNoteSequence() {
+    const noteSequenceConcatenated = Block.defaultNoteSequence();
+    this._blocks.forEach((b, i) => {
+      b.noteSequence.notes.forEach((n) => {
+        const note = { ...n };
+        note.quantizedStartStep += i * Constants.TOTAL_STEPS;
+        note.quantizedEndStep += i * Constants.TOTAL_STEPS;
+        noteSequenceConcatenated.notes.push(note);
+      });
+    });
+    noteSequenceConcatenated.totalQuantizedSteps = this._blocks.length * Constants.TOTAL_STEPS;
+
+    return noteSequenceConcatenated;
+  }
+
   continue(blockmanager: BlockManager) {
     // add a working empty block
     const block = new Block(blockmanager.nextId(), blockmanager);
@@ -228,19 +243,10 @@ class Blockchain implements IBlockObject {
     block.init();
     block.isWorking = true;
 
-    const noteSequenceConsolidated = Block.defaultNoteSequence();
-    this._blocks.forEach((b, i) => {
-      b.noteSequence.notes.forEach((n) => {
-        const note = { ...n };
-        note.quantizedStartStep += i * Constants.TOTAL_STEPS;
-        note.quantizedEndStep += i * Constants.TOTAL_STEPS;
-        noteSequenceConsolidated.notes.push(note);
-      });
-    });
-    noteSequenceConsolidated.totalQuantizedSteps = this._blocks.length * Constants.TOTAL_STEPS;
+    const noteSequenceConcatenated = this.getNoteSequence();
 
     this.addBlock(block);
-    AppWorker.continueSequence(noteSequenceConsolidated).then((noteSequence) => {
+    AppWorker.continueSequence(noteSequenceConcatenated).then((noteSequence) => {
       block.noteSequence = noteSequence;
       this.render();
     });
