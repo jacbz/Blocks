@@ -367,15 +367,16 @@ class BlockManager {
 
     // consolidate all blocks into one
     const noteSequences = this._blockObjects.map((b) => b.getNoteSequence());
-    const firstNoteSequence = noteSequences.shift();
     const consolidatedBlock = noteSequences.reduce((prev, curr) => {
       prev.notes = [...prev.notes, ...curr.notes];
       return prev;
-    }, firstNoteSequence);
-
+    }, Block.defaultNoteSequence());
+    consolidatedBlock.totalQuantizedSteps =
+      Math.max(...noteSequences.map((ns) => ns.totalQuantizedSteps));
     consolidatedBlock.notes.forEach((n) => {
       n.velocity = 100;
     });
+
     const midiBuffer = sequenceProtoToMidi(consolidatedBlock);
     const midiBlob = new Blob([midiBuffer], { type: 'audio/midi' });
     return URL.createObjectURL(midiBlob);
@@ -557,6 +558,7 @@ class BlockManager {
         })
         .styleCursor(false)
         .on('click', (event) => {
+          // left click: toggle note
           const blockId = parseInt(event.target.getAttribute('block'), 10);
           const block = blockManager.getBlockById(blockId);
           if (block) {
@@ -564,6 +566,7 @@ class BlockManager {
           }
         })
         .on('contextmenu', (event) => {
+          // right click: jump to position
           event.originalEvent.preventDefault();
           const blockId = parseInt(event.target.getAttribute('block'), 10);
           const block = blockManager.getBlockById(blockId);
