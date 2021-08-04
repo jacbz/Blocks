@@ -376,6 +376,7 @@ class BlockManager {
     consolidatedBlock.notes.forEach((n) => {
       n.velocity = 100;
     });
+    consolidatedBlock.tempos = [{ time: 0, qpm: Tone.Transport.bpm.value }];
 
     const midiBuffer = sequenceProtoToMidi(consolidatedBlock);
     const midiBlob = new Blob([midiBuffer], { type: 'audio/midi' });
