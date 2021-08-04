@@ -79,7 +79,7 @@ class Block implements IBlockObject {
 
   constructor(id: number, blockmanager: BlockManager) {
     this._id = id;
-    this._element = blockmanager.createBlockDom(this);
+    this._element = blockmanager.initBlockDom(this);
   }
 
   getNoteSequence() {

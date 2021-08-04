@@ -57,6 +57,14 @@ class Blockchain implements IBlockObject {
 
   private _currentPlayingBlock: number = 0;
 
+  get currentPlayingBlock() {
+    return this._currentPlayingBlock;
+  }
+
+  set currentPlayingBlock(currentPlayingBlock: number) {
+    this._currentPlayingBlock = currentPlayingBlock;
+  }
+
   set currentStep(currentStep: number) {
     this._blocks.forEach((b) => {
       b.currentStep = undefined;

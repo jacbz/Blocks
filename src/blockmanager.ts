@@ -58,7 +58,7 @@ class BlockManager {
   play() {
     const smallestDivision = `${Constants.STEPS_PER_QUARTER * 4}n`; // default: 16th note
 
-    this._currentStep = 0;
+    if (!this._currentStep) this._currentStep = 0;
     Tone.Transport.scheduleRepeat((time: number) => {
       const pitchToCountMap = new Map<number, number>();
       this._blockObjects.forEach((b) => {
@@ -169,7 +169,7 @@ class BlockManager {
     return block;
   }
 
-  createBlockDom(block: Block) {
+  initBlockDom(block: Block) {
     // position
     const blockTemplate = document.getElementById('block-template') as HTMLTemplateElement;
     const blockElement = (blockTemplate.content.cloneNode(true) as HTMLElement).querySelector(
@@ -561,6 +561,30 @@ class BlockManager {
           const block = blockManager.getBlockById(blockId);
           if (block) {
             toggleNote(block);
+          }
+        })
+        .on('contextmenu', (event) => {
+          event.originalEvent.preventDefault();
+          const blockId = parseInt(event.target.getAttribute('block'), 10);
+          const block = blockManager.getBlockById(blockId);
+          if (block) {
+            const step = parseInt(this._hoveredCellElement.getAttribute('col'), 10);
+            const blockchain = blockManager.getBlockchainOfBlock(block);
+            if (blockchain) {
+              const shift = blockchain.blocks.indexOf(block) - blockchain.currentPlayingBlock;
+              blockManager._blockObjects.forEach((b) => {
+                if (b instanceof Blockchain) {
+                  b.currentPlayingBlock =
+                    (((b.currentPlayingBlock + shift) % b.blocks.length) + b.blocks.length)
+                    % b.blocks.length;
+                }
+              });
+            }
+            blockManager._currentStep = step;
+            blockManager._blockObjects.forEach((b) => {
+              b.currentStep = step;
+              b.render();
+            });
           }
         });
     }
