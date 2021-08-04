@@ -32,6 +32,10 @@ function finishLoading() {
 
 // play button
 playButton.addEventListener('click', () => {
+  play();
+});
+
+function play() {
   if (blockManager.isPlaying) {
     blockManager.stop();
     playButton.classList.toggle('isplaying', false);
@@ -43,7 +47,7 @@ playButton.addEventListener('click', () => {
     playButton.classList.toggle('isplaying', true);
     blockManager.isPlaying = true;
   }
-});
+}
 
 function adjustTempoLabelPosition() {
   const sliderWidth = tempoSlider.offsetWidth;
@@ -58,10 +62,13 @@ function adjustTempoLabelPosition() {
 
 // volume slider
 tempoSlider.addEventListener('input', () => {
+  changeTempo();
+});
+function changeTempo() {
   Tone.Transport.bpm.value = tempoSlider.valueAsNumber;
   tempoLabel.innerText = tempoSlider.value;
   adjustTempoLabelPosition();
-});
+}
 tempoSlider.addEventListener('mousedown', () => {
   tempoDisplay.classList.add('active');
 });
@@ -77,3 +84,27 @@ adjustTempoLabelPosition();
 drumkitSwitch.addEventListener('change', (event) => {
   blockManager.toggleDrumkit();
 });
+
+// keyboard shortcuts
+window.onkeydown = (keyDownEvent: KeyboardEvent) => {
+  keyDownEvent.preventDefault();
+  switch (keyDownEvent.key) {
+    case ' ':
+      play();
+      break;
+    case 's':
+      drumkitSwitch.checked = !drumkitSwitch.checked;
+      blockManager.toggleDrumkit();
+      break;
+    case 'ArrowRight':
+      tempoSlider.valueAsNumber += 5;
+      changeTempo();
+      break;
+    case 'ArrowLeft':
+      tempoSlider.valueAsNumber -= 5;
+      changeTempo();
+      break;
+    default:
+      break;
+  }
+};
