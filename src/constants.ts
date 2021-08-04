@@ -20,6 +20,7 @@ export const DRUM_NAMES = [
   'ride cymbal'
 ];
 
+// the higher the temperature, the more random (and less like the input) the sequence will be
 export const TEMPERATURE = 1.1;
 
 // some of these are adapted from https://www.onlinedrummer.com/

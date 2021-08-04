@@ -14,7 +14,7 @@ class BlockManager {
 
   private _playerDrumKit = new PlayerDrumKit();
 
-  private _drumkit: IDrumKit = this._synthDrumKit;
+  private _drumkit: IDrumKit = this._playerDrumKit;
 
   get drumkit() {
     return this._drumkit;
