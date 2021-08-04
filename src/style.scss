@@ -382,7 +382,6 @@ $border-radius: 4px;
   position: absolute;
   user-select: none;
   touch-action: none;
-  transition: transform 0.2s;
 
   .block-name {
     visibility: hidden;
@@ -440,14 +439,10 @@ $dropzone-border: 4px;
 }
 
 $enlarge-factor: 1.6;
-$enlarged-width: $grid-width * $enlarge-factor;
-$enlarged-height: $grid-height * $enlarge-factor;
 .enlarged {
-  transform: translateX(-($enlarged-width/2 - $grid-width/2)) translateY(-($enlarged-height/2 - $grid-height/2));
-
   .grid {
-    width: $enlarged-width;
-    height: $enlarged-height;
+    width: $grid-width * $enlarge-factor;
+    height: $grid-height * $enlarge-factor;
   }
 
   #zoom-button {
