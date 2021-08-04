@@ -106,12 +106,13 @@ drumkitSwitch.addEventListener('change', (event) => {
 
 // keyboard shortcuts
 window.onkeydown = (keyDownEvent: KeyboardEvent) => {
-  keyDownEvent.preventDefault();
   switch (keyDownEvent.key) {
     case ' ':
+      keyDownEvent.preventDefault();
       play();
       break;
     case 's':
+      keyDownEvent.preventDefault();
       if (keyDownEvent.ctrlKey) {
         exportMidi();
       } else {
@@ -120,10 +121,12 @@ window.onkeydown = (keyDownEvent: KeyboardEvent) => {
       }
       break;
     case 'ArrowRight':
+      keyDownEvent.preventDefault();
       tempoSlider.valueAsNumber += 5;
       changeTempo();
       break;
     case 'ArrowLeft':
+      keyDownEvent.preventDefault();
       tempoSlider.valueAsNumber -= 5;
       changeTempo();
       break;
